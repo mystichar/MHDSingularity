@@ -108,6 +108,43 @@ and its scalar ODE for any prescribed axial-column coefficient. No
 arbitrary-seed component formula is transferred to either assembled field:
 that would require an axial **row** identity, which is not proved here.
 
+## Closed periodic Navier–Stokes and magnetic main theorem
+
+`MagneticPeriodicMain.periodic_main` has **no upstream construction
+hypotheses**. It instantiates `ActualCandidateAssembly.selected_witness` and
+uses the natural solution already retained in
+`ActualPrimary.nominal.axis.natural.profile.family.natural`, preserving its
+exact parameters. The same schedule supplies the actual periodic velocity,
+its actual pressure sum, and the forcing with `CandidateProperties`, global
+forcing smoothness, and `CandidateConsequences.Consequences`.
+
+The theorem chooses that prescribed viscosity-one velocity and a time
+`0<a<1` before the magnetic seed. For every scalar seed `Bz0`, it constructs
+one periodic divergence-free classical induction field on `[a,1)` and proves
+its spatial smoothness and exact distinguished-trajectory amplification.
+For `Bz0≠0`, both the pathwise norm and the **global spatial supremum norm**
+diverge as `t→1-`. The latter is the uniform norm defined by a supremum,
+not an essential supremum.
+
+`MagneticPeriodicNorms.slab_norm_energy_bound` gives uniform finite spatial
+supremum and cell-energy bounds on every fixed `[a,b]`, `b<1`. Cell energy is
+`(1/2) integral_cell |B|²`, represented by a nonnegative extended Lebesgue
+integral and proved finite. These bounds may depend on b; no magnetic-energy
+blow-up or finite-volume energy-growth claim follows.
+
+`MagneticPeriodicMain.arbitrarily_small_seed` keeps the same prescribed
+velocity and reference time and constructs a seed `0<Bz0<epsilon` for each
+`epsilon>0`, with global supremum-norm divergence. No Lorentz backreaction
+or resistivity is introduced. Joint regularity remains C1 in the interior;
+all spatial orders are proved separately.
+
+See [the theorem and proof outline](Paper/PeriodicPassiveInduction.md) and
+[MHD_PROGRESS.md](MHD_PROGRESS.md) for the exact statements, scope, and
+validation. The full build passes (11,265 jobs); the nine new and 29 prior
+axiom audits use only `propext`, `Classical.choice`, and `Quot.sound`.
+Four unrelated inherited challenge warnings remain. No novelty or
+publication-readiness claim is made.
+
 ## Constructed periodic ideal-induction solution
 
 `MagneticPeriodicCoefficient.lean` adapts the actual selected periodic velocity

@@ -1,4 +1,128 @@
-# MHDSingularity handoff: constructed periodic ideal induction
+# MHDSingularity handoff: closed periodic main theorem and norm consequences
+
+## Current milestone
+
+New modules `MagneticPeriodicMain.lean` and `MagneticPeriodicNorms.lean`
+package the previous construction without changing its proofs. The readable
+statement and proof outline are in `Paper/PeriodicPassiveInduction.md`.
+The historical entries below retain their original assumptions; the closed
+main theorem here discharges the selected-schedule and natural-solution
+hypotheses that were explicit at commit `1aab808`.
+
+### Upstream closure and exact velocity identity
+
+`MagneticPeriodicMain.naturalSolution` is the retained proof
+`CorrectionInitialization.ActualPrimary.nominal.axis.natural.profile.family.natural`.
+This is the already selected entrance/profile-family solution used by the
+actual nominal construction, not an independently selected solution sharing
+only nominal parameter names. Its h, j, pressure datum, scale, and
+normalization match ActualPrimary by their dependent types.
+
+`periodic_main` instantiates `ActualCandidateAssembly.selected_witness` with
+its selected budget, selected threshold, and selected threshold geometry.
+One returned schedule supplies both the magnetic construction and the NS
+witness. The velocity is exactly `actualPeriodicVelocity` with those values.
+`MagneticPeriodicMain.pressure` is the activated periodic pressure sum of the
+same schedule's actual pressure stages. `CandidateProperties`, global smooth
+forcing, and `CandidateConsequences.Consequences` are retained for precisely
+this velocity, pressure, and forcing.
+
+There are **no remaining upstream compatibility or existence assumptions**
+in `periodic_main`. The reusable `constructed_conclusions` deliberately
+retains `Selected scales`, `lateStart ... < a`, and `a<1`; the closed theorem
+instantiates them. Standard Lean logical axioms are listed in the audit.
+
+### Exact main statements
+
+In namespace `NavierStokes.MagneticPeriodicMain`, abbreviations `budget`,
+`threshold`, and `geometry` are the existing selected constants;
+`velocity scales` is the corresponding actual assembled periodic velocity.
+
+```text
+periodic_main : exists scales, Selected scales and
+  exists forcing a, 0 < a and a < 1 and
+  CandidateProperties (velocity scales) (pressure scales) forcing and
+  ContDiff real infinity forcing and
+  CandidateConsequences.Consequences (velocity scales) (pressure scales) forcing and
+  forall Bz0 : real, exists B,
+    MagneticConclusions (velocity scales) a Bz0 B
+```
+
+`MagneticConclusions u a Bz0 B` exports:
+
+1. The existing `ClassicalSolution u B a 1 Bz0`: joint continuity,
+   interior joint C1 regularity, periodicity, magnetic divergence freedom,
+   stretching-form induction, and constant axial seed at every spatial point.
+2. `forall t in [a,1), ContDiff real infinity (fun x => B(t,x))`.
+3. Exact amplification `B(t,gamma(t)) = Bz0*((1-a)/(1-t))^K e2` on `[a,1)`.
+4. For `Bz0 != 0`, pathwise norm divergence and global spatial supremum-norm
+   divergence as `t -> 1-`.
+5. For every `b in [a,1)`, constants `C>=0` and `E<infinity` such that, uniformly
+   for `t in [a,b]`, `supNorm B t <= C` and `cellEnergy B t <= E < infinity`.
+
+The velocity and the late time are selected BEFORE quantifying over seed
+amplitudes. `arbitrarily_small_seed` states:
+
+```text
+exists scales forcing a, 0 < a and a < 1 and
+  CandidateProperties (velocity scales) (pressure scales) forcing and
+  forall epsilon > 0, exists Bz0, 0 < Bz0 and Bz0 < epsilon and
+    exists B, MagneticConclusions (velocity scales) a Bz0 B and
+      Tendsto (supNorm B) (nhdsWithin 1 (Iio 1)) atTop.
+```
+
+It uses `Bz0=epsilon/2`. The velocity remains prescribed for every seed.
+
+### Norm and finite-time energy proofs
+
+`MagneticPeriodicNorms.supNorm B t` is `sSup (range (fun x => norm(B(t,x))))`.
+`slab_bound` proves boundedness of all spatial values on a fixed time slab
+by compactness of its product with the existing unit cube and exact periodic
+reduction to fractional coordinates. `supNorm_bounds` justifies this real
+supremum and the lower bound by every point value. `supNorm_tendsto` then
+compares it with the diverging trajectory norm. An essential supremum is
+not used, so no pointwise-to-essential-supremum assumption is hidden here.
+
+`cellEnergy B t` is the ENNReal nonnegative Lebesgue integral
+`(1/2) * integral_cell norm(B(t,x))^2 dx`.
+`energy_bound` proves it is at most `(1/2)*C^2*volume(cell)` under a global
+pointwise bound C. `slab_norm_energy_bound` combines this with compact-cell
+finite measure to prove finiteness and a uniform upper bound on each fixed
+`[a,b]`. Spatial smoothness of the same B is exported separately. No bound
+uniform in b as b tends to one is asserted, and no energy lower bound or
+energy blow-up is proved.
+
+### Scope and validation
+
+The physical clock is unchanged: viscosity one, singular time one, and
+power-law factor `((1-a)/(1-t))^K`. The earlier exponent, amplification,
+transport, and flow proofs are unchanged. Joint C-infinity regularity is not
+claimed. Whole-space compact-seed transport remains the following milestone.
+No arbitrary-direction amplification transfer, finite-volume energy-growth
+result, resistivity, Lorentz backreaction, coupled MHD, or fusion-performance
+claim is made. Novelty and publication readiness have not been assessed.
+
+Validation completed:
+
+- `lake build NavierStokes.MagneticPeriodicMain` passed. The small-seed
+  corollary's final explicit norm-divergence conclusion was also checked by
+  the subsequent full build.
+- Full `lake build` passed: 11,265 jobs. Four inherited `sorry` warnings in
+  `ComparatorChallenges/Euler.lean` and `ComparatorChallenges/NavierStokes.lean`
+  remain outside this proof chain.
+- `lake env lean scripts/audit_magnetic_main.lean` passed for all nine new
+  audited declarations, including the retained natural-solution proof, the
+  energy/supremum estimates, and both closed main results.
+- `lake env lean scripts/audit_magnetic_periodic.lean` passed again for all
+  29 prior construction declarations. All 38 audited declarations depend
+  only on `propext`, `Classical.choice`, and `Quot.sound`; none uses `sorryAx`.
+- The new modules contain no `sorry`, `admit`, or added axiom declarations.
+  Existing Lean proofs and the prior audit script are unchanged from
+  `1aab808`. Whitespace checks passed.
+
+---
+
+# Historical handoff: constructed periodic ideal induction
 
 ## Current milestone: checkpoints A and B
 
