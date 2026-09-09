@@ -1,4 +1,118 @@
-# MHDSingularity handoff: periodic resistive comparison
+# MHDSingularity handoff: physical periodic heat interface
+
+## Heat checkpoint after 9618457
+
+Continued from the clean local main at 9618457 without resetting. Every
+pre-existing Lean file is preserved. Twelve new modules construct the
+physical heat interface; no resistive induction solution is constructed.
+
+All new names use `NavierStokes.ResistiveMagnetic.PeriodicGaussian`.
+
+- `ResistivePeriodicHeatSpace`: `PeriodicValue`, physical translations,
+  `periodicValueCompleteSpace`, and the definitional Space specialization
+  `periodicValue_space`.
+- `ResistivePeriodicHeatSemigroup`: `valueLine_eq_lineOperator`,
+  `valueSpatial_eq_spatialOperator`, `spatialOperator_semigroup`,
+  `spatialOperator_zero`, `heat_semigroup` (eta_m,r,s>=0), contraction and
+  constant preservation, `heat_strong_continuous`, `heat_joint_continuous`,
+  and the existing absolute-time bridge `heat_eq_physicalAverage`.
+- `ResistivePeriodicC1`: `derivativeGraph_closed`,
+  `periodicC1ValueCompleteSpace`, `c1_fderiv`, `c1_norm`, `c1Inclusion`,
+  `c1Value_injective`, and constants. The exact norm is max(C0 value norm,
+  C0 Frechet-derivative norm); the derivative is actual, not arbitrary data.
+- `ResistivePeriodicHeatKernel`: the explicit integrable shifted-Gaussian
+  envelope and `valueLine_hasDerivAt` from merely continuous input, in
+  uniform norm, with the Gaussian moment divided by sqrt(variance).
+- `ResistivePeriodicTranslationDerivative`: finite-dimensional continuous
+  partial derivatives give a full Frechet derivative; `derivativeTranspose`
+  produces the actual periodic derivative-valued field.
+- `ResistivePeriodicHeatSmoothing`: `valueSpatial_hasFDerivAt`,
+  `heat_fderiv_bound`, `gainVariance`, `heatGain`, `heatGain_value`, and
+  `heatGain_norm_le`. The full derivative constant is
+  `heatConstant = 3 * EulerGaussianCylinderHeat.gaussianAbsMoment 1`,
+  independent of eta_m,tau,f; the input is only continuous.
+- `ResistivePeriodicHeatC1`: differentiation commutes with the same heat
+  operator (`spatialC1_derivative`, `heatC1_derivative`), and
+  `heatC1_strong_continuous` includes zero for C1 input. The proof integrates
+  C1 translations in the proved complete derivative graph.
+- `ResistivePeriodicHeatVolterra`: positive-time/input continuity of gain
+  in C1 norm, the actual zero-extended `heatKernel`, its joint continuity
+  and bound, and integrability/exact mass of `kernelMajorant`:
+  `T + 2*heatConstant*sqrt(T/eta_m)` for eta_m>0, T>=0 (including T=0).
+- `ResistivePeriodicHeatDerivatives`: `c1OfContDiff` obtains bounded
+  derivative data by physical periodic compactness;
+  `c1_translation_hasDerivAt` proves strong translation differentiation by
+  the fundamental theorem of calculus in uniform space.
+- `ResistivePeriodicHeatLineGenerator`: the genuine directional Gaussian
+  generator is half the second strong derivative, both at positive
+  variance and as a right derivative at zero.
+- `ResistivePeriodicHeatGenerator`: `laplacianField_eq_spatialLaplacian`,
+  `variance_generator_limit`, `variance_generator_zero`,
+  `heat_generator_zero`, and `heat_generator_limit`. For C2 periodic f,
+  `(T_eta(tau)f-f)/tau -> eta_m*Delta f` in uniform norm as tau->0+,
+  for every eta_m>=0. No bounded C0 generator is asserted.
+- `ResistivePeriodicHeatEquation`: positive-time C2 smoothing by two C1
+  gains, `laplacianField_heat`, `variance_generator_pos`,
+  `heat_contDiff_two`, `heat_hasDerivAt`, and `heat_equation` for C0 data
+  when eta_m,tau>0. The time derivative is in the uniform Banach space.
+
+The domain is the physical unit-periodic cover of R3. No zero-mean,
+whole-cover L2, periodic-vector-potential, or cylinder identification is
+used. The variance is exactly `2*eta_m*tau`; fluid viscosity and the original
+physical time have not been changed. The clamped negative-time extension
+is used only as an extension of a continuous function, never to assert
+negative-time semigroup laws. The Volterra kernel's zero extension is
+separate from the actual identity heat operator at tau=0.
+
+Actual exported regularity: strong C0 continuity through zero; positive-time
+C1 target-norm continuity; strong C1 continuity at zero for C1 input;
+positive-time spatial C2 slices and uniform-space time differentiability.
+No joint C-infinity regularity or C0-to-C1 continuity at zero is claimed.
+
+### Validation
+
+- `lake build NavierStokes.ResistivePeriodicHeatEquation`: passed, 9,338 jobs;
+  this target imports all twelve new modules.
+- Full `lake build`: passed, 11,312 jobs.
+- `lake env lean scripts/audit_resistive_heat.lean`: passed, 213 transitive
+  checks covering all 199 new named declarations and fourteen explicit
+  construction/analytic dependencies. This includes the two completeness
+  instances, the original Gaussian operators, Gaussian convolution,
+  differentiation under the integral, integration by parts, and the inspected
+  Volterra existence theorem.
+- All seven previous audit scripts pass their 358 checks; combined total 571.
+  Every audited declaration uses only `propext`, `Classical.choice`, and
+  `Quot.sound`, or no axioms. No `sorryAx` occurs in these dependencies.
+- No new Lean declaration uses `sorry`, `admit`, or an added axiom. The four
+  inherited `ComparatorChallenges` admissions are unchanged. The new modules'
+  nonfatal linter warnings concern unused section variables only.
+- All pre-existing Lean files are unchanged; `git diff --check` passes.
+
+### Next task and exact remaining obligations
+
+The inspected `EulerVolterraConvolution.exists_mild_solution` fits
+X=PeriodicC1, Y=PeriodicField, K=`heatKernel eta_m heta`,
+k=`kernelMajorant eta_m`, with its continuity, completeness, integrability,
+nonnegativity and kernel bound discharged. Use the free path
+`tau -> heatC1 eta_m tau B_a`, with the same constant axial seed.
+
+Next construct `Source(tau,B) = -DB[u(a+tau)] + Du(a+tau)[B]` as an
+unprojected bounded linear C1-to-C0 map. Prove its time continuity and
+norm/Lipschitz bounds from `Comparison.actual_velocity_bounds` and
+`MagneticPeriodicCoefficient.actualOnSlab` for the SAME selected actual
+periodic NS velocity. Then instantiate the ball budget and short-time
+contraction using the explicit kernel mass. Slab continuation, compatible
+higher regularity, the mild-to-classical-PDE bridge, forward divergence
+preservation, and restriction/gluing remain unproved. Only after that
+construction can the existing actual comparison be used for a closed
+finite-gain theorem. No induction existence is concealed in a new structure
+or assumed heat wrapper.
+
+See `Paper/ResistiveMagneticInduction.md` for exact formulas, assumptions,
+proof routes, and the full Volterra signature. The scope still excludes
+fixed-diffusivity terminal conclusions, length-scale closure, numerical
+conductivity predictions, energy blow-up, backreaction, and coupled MHD.
+
 
 ## Completed checkpoint after 4d513f8: periodic PDE-to-comparison
 

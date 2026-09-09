@@ -1,5 +1,233 @@
 # Paper II: passive resistive induction and fixed-slab comparison
 
+## Physical periodic heat interface (after 9618457)
+
+This checkpoint concerns the heat operators needed for a later induction
+construction. It preserves every pre-existing Lean file, including the
+comparison/uniqueness package and the Paper I results. It constructs no
+resistive induction solution and makes no positive-diffusivity terminal claim.
+
+All names below are in `NavierStokes.ResistiveMagnetic.PeriodicGaussian`
+unless a different namespace is specified.
+
+### Geometry, spaces, and the same Gaussian operator
+
+`PeriodicField` remains the original complete uniform space of continuous
+unit-periodic `Space -> Space` fields, where `Space` is Euclidean R3.
+`PeriodicValue V` extends its codomain to real Banach spaces, including
+`Space ->L[Real] Space`. `periodicValue_space` is a definitional equality
+with the original space, and `valueLine_eq_lineOperator` and
+`valueSpatial_eq_spatialOperator` identify the extended operators with the
+original ones. The cylinder R3 x T is never identified with the physical
+three-torus. There is no zero-mean, cover-L2, or vector-potential requirement.
+
+`derivativeGraph_closed` proves that the pairs (f,G) satisfying
+`HasFDerivAt f (G x) x` at every x form a closed linear subspace of the
+product of two periodic uniform spaces. The proof uses uniform convergence
+of the derivatives and pointwise convergence of the functions.
+`periodicC1ValueCompleteSpace` proves completeness. `PeriodicC1` is its
+Space-valued specialization, with the exact norm
+
+```
+||f||_C1 = max(||f||_infinity, ||Df||_infinity).
+```
+
+`c1_fderiv` identifies the stored derivative with the actual Frechet
+derivative. `c1Inclusion` is a continuous linear injection into the original
+`PeriodicField`; `c1Value_injective` proves injectivity. `c1Constant` contains
+every constant vector, has zero derivative, and has norm equal to that
+vector's norm. No all-orders Banach hierarchy is introduced.
+
+### Semigroup, smoothing, and time budget
+
+Write A(r) for the original `spatialOperator r`, r>=0. The exact statements
+`spatialOperator_zero` and `spatialOperator_semigroup` are
+
+```
+A(0) = id,
+A(r+s) = A(r).comp(A(s)).
+```
+
+The proof combines Gaussian convolution in the same direction, commuting
+physical translations in different directions, and Bochner Fubini under
+finite Gaussian measures with uniform integrable bounds. Zero variance uses
+the original Dirac convention.
+
+`heat eta_m tau = A((2*eta_m*tau).toNNReal)` uses elapsed physical time.
+`heat_semigroup` requires eta_m,r,s>=0; `heat_zero`, `heat_norm_le`, and
+`heat_constant` export identity, contraction, and constant preservation.
+`heat_eq_physicalAverage` gives the exact bridge to the earlier absolute-time
+formula. `heat_strong_continuous` and `heat_joint_continuous` prove uniform-norm
+strong continuity for every datum, including time zero. The clamped real-time
+extension is continuous, but no negative-time semigroup is asserted.
+There is no assertion of operator-norm continuity at zero.
+
+For positive variance, `valueLine_hasDerivAt` proves a strong translation
+derivative for **merely continuous** input. It rewrites translation of the
+Gaussian average as integration against the shifted density and differentiates
+that density. `shiftedGaussian_derivative_bound` and
+`shiftEnvelope_integrable` justify differentiation under the Bochner integral.
+The derivative's bound uses the proved finite Gaussian first absolute moment.
+`translate_hasFDerivAt_coordinates` combines the three genuine directional
+derivatives, using continuity of partial derivatives, into a full derivative.
+
+`valueSpatial_hasFDerivAt`, `valueSpatial_fderiv_bound`, and `heat_fderiv_bound`
+therefore give genuine smoothing, with no differentiability hypothesis on f:
+
+```
+||D T_eta(tau) f||_infinity
+  <= C_heat / sqrt(eta_m*tau) * ||f||_infinity,
+C_heat = heatConstant = 3 * EulerGaussianCylinderHeat.gaussianAbsMoment 1.
+```
+
+This is a bound for the full Frechet operator norm, not only separate
+coordinate entries. The three-coordinate sum gives a nonoptimal constant;
+only scalar Gaussian estimates are reused from the cylinder modules. The
+function space remains the physical three-dimensional periodic cover.
+C_heat is a finite nonnegative real independent of eta_m, tau, and f.
+The variance estimate retains the stronger denominator sqrt(2*eta_m*tau).
+
+For eta_m,tau>0, `heatGain eta_m tau heta htau` is a constructed bounded
+linear map `PeriodicField ->L[Real] PeriodicC1`, with
+
+```
+c1Inclusion (heatGain eta_m tau heta htau f) = heat eta_m tau f,
+||heatGain eta_m tau heta htau|| <= 1 + C_heat/sqrt(eta_m*tau).
+```
+
+`gainVariance_joint_continuous` and `heatGain_joint_continuous` prove joint
+positive-time/input continuity in the target C1 norm. The proof factors off
+a fixed positive smoothing step and uses the semigroup plus injectivity of
+the C1 inclusion. `lineC1_derivative`, `spatialC1_derivative`, and
+`heatC1_derivative` prove derivative commutation by integrating translations
+in the proved complete derivative graph. `heatC1_strong_continuous` includes
+time zero for C1 input. This is not C0-to-C1 continuity at zero.
+
+`heatKernel eta_m heta tau` agrees with heatGain for tau>0 and is zero
+otherwise. Its zero value is a Volterra integration convention, separate
+from the identity heat operator at zero. `heatKernel_joint_continuous`,
+`heatKernel_bound`, `kernelMajorant_integrable`, and
+`kernelMajorant_integral` supply, for eta_m>0 and T>=0,
+
+```
+k_eta(tau) = 1 + C_heat/sqrt(eta_m*tau),
+Integral_(0,T] k_eta(tau) d tau = T + 2*C_heat*sqrt(T/eta_m).
+```
+
+`kernelMajorant_integral_zero` includes T=0 explicitly. Bounds may deteriorate
+as eta_m tends to zero.
+
+### Generator and established regularity
+
+`c1_translation_hasDerivAt` uses the fundamental theorem of calculus and
+bounded point evaluations to turn actual spatial C1 derivatives into strong
+uniform-space translation derivatives. `c1OfContDiff` obtains the required
+uniform derivative field for every supplied classical C1 periodic input from
+the physical compact cell.
+
+`realValueLine_generator_zero` and `realValueLine_generator_pos` prove the
+half-second-directional-derivative variance generator. For supplied C2
+periodic f, `variance_generator_limit` and `variance_generator_zero` add its
+three coordinate contributions. `laplacianField_eq_spatialLaplacian` identifies
+the resulting bounded continuous periodic field with the project's actual
+`spatialLaplacian` convention. `heat_generator_zero` and
+`heat_generator_limit` state, for eta_m>=0,
+
+```
+HasDerivWithinAt (fun tau => heat eta_m tau f)
+  (eta_m • laplacianField f hf) (Ici 0) 0,
+lim_(tau -> 0+) tau^(-1) • (heat eta_m tau f - f)
+  = eta_m • laplacianField f hf.
+```
+
+The limit is in the uniform function-space norm. The C2 hypothesis is on
+the supplied spatial input; no bounded generator on the entire C0 space is
+claimed. Zero diffusivity is included.
+
+`valueSpatial_contDiff_two` obtains positive-time spatial C2 from C0 input
+by composing two C1 gains, with derivative-valued averaging and the proved
+commutation identity. `laplacianField_heat` proves Laplacian commutation.
+`variance_generator_pos` and `heat_hasDerivAt` give positive-time derivatives
+in the uniform space for merely continuous input. `heat_equation` is exactly
+
+```
+temporalDerivative (fun p => (heat eta_m p.1 f).val p.2) tau x
+  = eta_m • spatialLaplacian (fun p => (heat eta_m p.1 f).val p.2) tau x
+```
+
+for eta_m,tau>0. The left time derivative uses only positive heat times;
+it does not invert the heat operator. The proved bridges
+`temporalDerivative_of_uniform_derivative` and
+`heat_equation_of_uniform_derivative` convert the uniform derivative into
+the project's pointwise operators; `heat_equation` instantiates both its
+spatial regularity and uniform time derivative from the actual heat operator.
+The established exports are strong C0
+continuity through zero, positive-time C1 target-norm continuity, spatial C2
+slices, and uniform-space time differentiability at positive times. Joint
+C-infinity regularity is not asserted.
+
+### Next existence handoff: inspected Volterra hypotheses
+
+The pinned `EulerVolterraConvolution.exists_mild_solution` accepts real Banach
+X, a real normed Y, elapsed slab length T>=0, K:Real->Y->L[Real]X, and k, with:
+
+1. joint continuity of `(r,y) -> K r y` on `(0,infinity) x Y`;
+2. integrability and nonnegativity of k on `(0,T]`;
+3. `||K r y|| <= k(r)*||y||` on that interval;
+4. a free path in `C(Icc 0 T,X)` and a jointly continuous source
+   `F : Icc 0 T -> X -> Y`;
+5. nonnegative R,M,L, a source bound M and Lipschitz constant L on the
+   radius-R ball, and the two inequalities
+   `||free|| + kernelMass(T,k)*M <= R` and `kernelMass(T,k)*L < 1`.
+
+Use **X=PeriodicC1**, **Y=PeriodicField**, K=`heatKernel eta_m heta`, and
+k=`kernelMajorant eta_m`. Items 1--3 and completeness are constructed here.
+The initial path is `tau -> heatC1 eta_m tau B_a`; its continuity through zero
+is proved, and a constant axial seed belongs to C1 and is preserved.
+The exact kernel mass above tends to zero with T for fixed eta_m>0, as needed
+for a short-time contraction. The final contraction inequalities still need
+to be proved after constructing the source adapter.
+
+The next source is the **unprojected linear** map, in the existing physical
+clock and viscosity-one prescribed NS velocity,
+
+```
+Source(tau,B)(x) = -(c1Derivative B)(x) (u(a+tau,x))
+                  + D_x u(a+tau,x) ((c1Value B)(x)).
+```
+
+Construct its bounded-linear C1-to-C0 product adapter and prove joint time
+continuity. On a fixed slab the expected norm/Lipschitz bound is U_b+L_b,
+where `Comparison.actual_velocity_bounds` already supplies the uniform
+bounds on u and Du for the SAME selected actual periodic velocity.
+`MagneticPeriodicCoefficient.actualOnSlab` supplies the existing continuous
+coefficient/derivative paths. The older pointwise `source_difference_bound`
+requires smooth fields; it should not be silently used as a C1-space theorem.
+
+Still required, after that adapter: instantiate the local Volterra budgets;
+prove mild uniqueness and linear continuation over each fixed preterminal
+slab; establish sufficient compatible higher regularity and the mild-to-PDE
+bridge; prove forward-endpoint divergence preservation; prove restriction
+compatibility and glue one solution for each eta_m on `[a,1)`; then apply the
+already-completed ideal/resistive comparison and finite-gain argument with
+the correct fixed-data quantifiers. First-derivative heat smoothing alone is
+not a classical **induction** existence theorem. None of these steps is
+implemented in this checkpoint. Fixed-diffusivity terminal behavior, a
+magnetic length scale, and a quantitative conductivity threshold remain open.
+
+### Heat-checkpoint validation
+
+The targeted `ResistivePeriodicHeatEquation` build passes (9,338 jobs), and
+the full `lake build` passes (11,312 jobs). The new
+`scripts/audit_resistive_heat.lean` checks all 199 new named declarations and
+fourteen explicit analytic/construction dependencies. Its 213 checks and the
+358 checks in all seven previous magnetic audit scripts pass: 571 total.
+Only `propext`, `Classical.choice`, and `Quot.sound` occur, or no axioms.
+There is no new admitted proof or axiom. The four inherited challenge
+admissions remain unchanged and are absent from the audited dependencies.
+New linter warnings concern unused section variables only.
+
+
 ## Completed periodic PDE-to-comparison checkpoint (after 4d513f8)
 
 This checkpoint proves comparison and uniqueness for supplied resistive

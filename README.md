@@ -5,6 +5,41 @@ from the inherited OpenAI Navier–Stokes formalization. The magnetic field is
 passive: no Lorentz-force backreaction or coupled MHD solution is asserted.
 The inherited results and their attribution are retained below.
 
+## Physical periodic heat interface
+
+The existing three-dimensional periodic Gaussian operators now have a proved
+semigroup law, uniform strong continuity, genuine C0-to-C1 derivative gain,
+and the physical generator `eta_m * Delta`. The original Space-valued
+operators are preserved; derivative-valued extensions have explicit equality
+bridges. Constants remain admissible.
+
+`PeriodicC1` is a proved complete graph of the actual derivative with norm
+`max(||f||_infinity, ||Df||_infinity)`. For eta_m,tau>0, the bounded linear
+`heatGain` has norm at most `1 + C_heat/sqrt(eta_m*tau)`, with one finite
+constant independent of eta_m, tau, and f. The same operator commutes with
+spatial differentiation, is strongly continuous on C1 through zero, and
+has jointly continuous positive-time gain in the C1 norm. The time majorant
+has integral `T + 2*C_heat*sqrt(T/eta_m)` on `(0,T]`.
+
+`heat_generator_limit` proves the right generator limit in uniform norm for
+supplied C2 periodic input, including eta_m=0. `heat_contDiff_two`,
+`heat_hasDerivAt`, and `heat_equation` give positive-time spatial C2 and the
+actual heat equation from merely continuous input. No joint C-infinity or
+operator-norm continuity at time zero is claimed.
+
+**Resistive induction existence is still open.** This checkpoint stops at the
+physical heat interface. The [Paper II handoff](Paper/ResistiveMagneticInduction.md)
+lists the exact Volterra spaces/kernel, remaining source estimates,
+continuation, classical regularity, divergence preservation, and gluing work.
+All pre-existing Lean files and theorem statements remain unchanged.
+
+Validation: the targeted heat build and full `lake build` pass (**11,312
+full-build jobs**). The new heat audit passes 213 checks, and all 358 previous
+magnetic checks pass: **571 total**, using only `propext`, `Classical.choice`,
+and `Quot.sound` (or no axioms). No admitted proof or axiom is added. The four
+inherited challenge admissions are unchanged and are absent from these
+audited dependencies.
+
 ## Periodic PDE-to-comparison: complete
 
 `ResistiveActualComparison.lean` closes the fixed-slab comparison with
@@ -36,9 +71,10 @@ diffusivity and the supplied resistive field. `resistive_unique` and
 `actual_resistive_unique` prove forward uniqueness in this class.
 
 **Resistive existence remains open.** No solution family on `[a,1)` or closed
-finite-gain theorem is constructed here. The earlier Gaussian/Volterra
-construction obligations remain; the ideal Laplacian bound and scalar
-comparison principle are now discharged. No estimate is uniform through
+finite-gain theorem is constructed here. The physical heat interface is now
+available; the source, Volterra construction, and induction-regularity
+obligations remain. The ideal Laplacian bound and scalar comparison principle
+are discharged. No estimate is uniform through
 `t=1`, and fixed-positive-diffusivity terminal behavior is undetermined.
 All prior Lean proofs are unchanged. See [the Paper II proof outline](Paper/ResistiveMagneticInduction.md)
 and [the handoff](MHD_PROGRESS.md) for exact statements and validation.
