@@ -1,0 +1,196 @@
+import NavierStokes.ResistiveActualFiniteGain
+
+/-! Transitive audit of the constant-seed classical construction, physical PDE,
+divergence preservation, compatible family, actual comparison, and finite gain.
+Every public named declaration in the new modules is checked. No arbitrary-C1
+positive-time smoothing theorem is asserted. -/
+
+-- ResistiveActualClassicalComparison
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.actual_family_comparison
+
+-- ResistiveActualFiniteGain
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.actual_ideal_path_norm
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.actual_family_finite_gain
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.periodic_classical_finite_gain
+
+-- ResistiveMildParameter
+#print axioms NavierStokes.ResistiveMagnetic.LinearMild.convolutionCLM
+#print axioms NavierStokes.ResistiveMagnetic.LinearMild.convolutionCLM_norm
+#print axioms NavierStokes.ResistiveMagnetic.LinearMild.responseMap
+#print axioms NavierStokes.ResistiveMagnetic.LinearMild.responseMap_norm
+#print axioms NavierStokes.ResistiveMagnetic.LinearMild.residualMap
+#print axioms NavierStokes.ResistiveMagnetic.LinearMild.residualMap_mild
+#print axioms NavierStokes.ResistiveMagnetic.LinearMild.one_sub_invertible
+#print axioms NavierStokes.ResistiveMagnetic.LinearMild.mild_family_contDiffAt
+
+-- ResistiveMildRightDerivative
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.shortDuhamel
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.shortDuhamel_hasDerivAt_zero
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.value_heat_restart_short
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.uniformLaplacian
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.value_heat_right_derivative
+
+-- ResistiveMildToPDE
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.integral_of_right_derivative
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.strong_derivative_of_right_derivative
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.valueEvolution
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.valueEvolution_continuous
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.mild_right_derivative
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.mild_hasDerivAt_of_laplacianPath
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.mild_hasDerivWithinAt_of_laplacianPath
+
+-- ResistivePeriodicClassical
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.laplacianEvolution
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.smooth_mild_hasDerivAt
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.smooth_mild_physical_hasDerivAt
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.actual_constant_time_differentiable
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.actual_constant_induction
+
+-- ResistivePeriodicClassicalGlue
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.slabField
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.slabField_overlap
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.field
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.field_eq_slab
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.field_initial
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.field_eventuallyEq
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.field_continuousOn
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.field_periodic
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.field_constant_spatial_smooth
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.field_constant_time_differentiable
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.field_constant_induction
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.family
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.family_positive
+
+-- ResistivePeriodicClassicalResult
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.ClassicalOn
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.family_classical
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.actual_constant_classical
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.actual_constant_spatial_jet_continuous
+
+-- ResistivePeriodicDivergence
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.constant_mild_divergence_free
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.actual_constant_divergence_free
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.field_constant_divergence_free
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicClassicalGlue.family_divergence_free
+
+-- ResistivePeriodicMildRestart
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.valueSource
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.shifted_heat_continuous
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.valueDuhamel
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.valueDuhamel_history
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.valueDuhamel_restart
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.value_heat_restart
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.mild_value_equation
+
+-- ResistivePeriodicPathJets
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.pathEval
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.translatePath_add
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.direction
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.direction_apply
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.translate_direction
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.direction_contDiff
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.value_slice_smooth
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.laplacianPath
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.laplacianPath_contDiff
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.laplacianPath_eq
+
+-- ResistivePeriodicSmoothSeed
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.weightCLM
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.shiftedSource_zero
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.translateC1Path_add
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.constant_seed_translation_contDiffAt_zero
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.constant_seed_translation_contDiff
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.fieldPath
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.fieldPath_contDiff
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.slice_smooth
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.magneticValues
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.magneticValues_translation_contDiff
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.spatial_jet_continuous
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.magnetic_laplacianPath_eq
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.physical_laplacian_continuous
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.actual_constant_translation_contDiff
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.actual_constant_spatial_smooth
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.actual_constant_laplacian_continuous
+
+-- ResistivePeriodicSolenoidal
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.traceOne
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.traceOne_apply
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.traceOne_jet
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.delta
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.delta_continuous
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.delta_periodic
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.delta_spatial_smooth
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.delta_eq_jet
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.delta_hasDerivAt
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.rhs_spatial_equation
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.delta_operator_zero
+
+-- ResistivePeriodicTimeJets
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.source_translation_contDiff
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.pointPath
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.pointPath_contDiff
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.rhsPath
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.rhs_translation_contDiff
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.mild_spatial_jet_time_derivative
+
+-- ResistivePeriodicTranslatedMild
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.sourceValueLinear
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.sourceDerivativeLinear
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.sourcePaths
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.shiftedSource
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.shiftedSource_contDiff
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.source_translate
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.valueSpatial_translate
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.heat_translate
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.heatC1_translate
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.heatKernel_translate
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.translateC1Path
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.mild_translate
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.translateC1_constant
+
+-- ResistivePeriodicTranslationRegularity
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.ValuePath
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.forgetPath
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.forgetPath_norm
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.hasFDerivAt_of_norm_preserving_comp
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.translatePath
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.directionPath
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.directionPath_norm_le
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.directionMap
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.directionBundling
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.periodicPath
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.derivative_periodic
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.translatePath_hasFDerivAt
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicTranslation.translatePath_contDiff
+
+-- ResistiveSpatialDivergence
+#print axioms NavierStokes.ResistiveMagnetic.Calculus.divergence_rhs
+#print axioms NavierStokes.ResistiveMagnetic.spatial_divergence_rhs
+
+-- Explicit inherited construction dependencies.
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.actualPath
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.actual_mild
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.actual_exists_mild
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.mild_unique
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.actual_overlap
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicMild.contractionWeight
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicSource.sourceOperator
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicSource.actualSourcePath
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicSource.actualSourcePath_eq_source
+#print axioms NavierStokes.ResistiveMagnetic.WeightedVolterra.weightedMass_tendsto_zero
+#print axioms NavierStokes.ResistiveMagnetic.LinearMild.exists_unique
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.heatKernel
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.heat_generator_limit
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.heat_hasDerivAt
+#print axioms EulerVolterraConvolution.exists_mild_solution
+#print axioms EulerSmoothPathTimeJets.jetFamily_hasDerivWithinAt
+#print axioms NavierStokes.MagneticPeriodicCoefficient.actualOnSlab
+#print axioms NavierStokes.MagneticPeriodicCoefficient.actual_divergence
+#print axioms NavierStokes.ResistiveMagnetic.Slice.nonpos
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.actual_comparison_constant
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.family_finite_gain
+#print axioms NavierStokes.MagneticPeriodicSolution.actualData
+#print axioms NavierStokes.MagneticPeriodicSolution.Data.classicalSolution
+#print axioms NavierStokes.MagneticCoreAmplification.axialExponent_pos
+#print axioms NavierStokes.MagneticAssembledAmplification.lateStart_spec
+#print axioms NavierStokes.ActualCandidateAssembly.selected_witness

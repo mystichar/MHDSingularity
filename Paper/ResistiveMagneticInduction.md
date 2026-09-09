@@ -1,6 +1,239 @@
-# Paper II: passive resistive induction and fixed-slab comparison
+# Paper II: passive resistive induction, classical fields and finite gains
 
-## Actual finite-slab periodic mild solutions (after 106fc10)
+## Current classical constant-seed theorem (after 6a9a5f0)
+
+For the actual periodic velocity used in Paper I, the previously constructed
+C1 mild field is now proved classical when its initial field is constant.
+The constant axial seed therefore gives, for each positive magnetic
+diffusivity, **one divergence-free classical field on [a,1)**. Its restrictions
+to all finite observation slabs agree with the original `actualPath`.
+The completed comparison theorem applies to this actual family. The final
+finite-gain transfer is consequently a corollary, with no assumed resistive
+solution and no new upstream compatibility hypothesis.
+
+The extension from arbitrary initial `PeriodicC1` data to positive-time C2
+regularity is **not completed**. The constant-seed proof establishes
+propagation of spatial smoothness in uniform path spaces; it is not a
+C1-to-C2 smoothing theorem for general data. This distinction is part of
+the theorem scope. All previous Lean statements are preserved.
+
+### Statements and quantifiers
+
+Names in this section are under `NavierStokes.ResistiveMagnetic` unless
+otherwise qualified. Set
+
+```
+u = MagneticPeriodicMain.velocity scales,
+T = b-a,
+z = PeriodicMild.actualPath scales hsel a b hab hb eta_m heta (c1Constant c),
+B(t,x) = PeriodicMild.physicalField a T (sub_nonneg.mpr hab.le) z (t,x).
+```
+
+The assumptions are precisely `Selected scales`, `a<b<1`, `eta_m>0`, and
+`c : Space`. No late-start condition is needed for existence. The physical
+source is unchanged: `-DB[u]+Du[B]`; time is `a+tau`, fluid viscosity is one,
+and the heat variance is `2*eta_m*tau`. The complete spaces remain
+`X=PeriodicC1` with norm `max(sup||B||,sup||DB||_operator)`, and
+`Y=PeriodicField` with its uniform norm. Constants have no mean or periodic
+vector-potential restriction.
+
+`PeriodicClassicalGlue.actual_constant_classical` gives joint continuity
+on `[a,b]×R3`, unit periods, spatial C-infinity slices through both endpoints,
+interior time differentiability, zero divergence through both endpoints,
+B(a,x)=c, and exactly
+
+```
+partial_t B + D B[u] = D u[B] + eta_m * spatialLaplacian B,  a<t<b.
+```
+
+`PeriodicMild.actual_constant_induction` is the explicit
+`ResistiveInductionOn eta_m (Ioo a b) u B` statement.
+`PeriodicMild.smooth_mild_hasDerivAt` proves a strong derivative in Y,
+not merely pointwise differentiability. The Laplacian is the project's
+actual spatial Laplacian. `actual_constant_spatial_jet_continuous` additionally
+proves continuity in time and space of every spatial jet, including the
+initial endpoint. There is no exported assertion of joint spacetime
+C-infinity. Time differentiation at endpoints is only within the forward
+closed slab, and no evolution before a is assumed.
+
+Fix scales, a<1 and c, then define
+`R_eta = PeriodicClassicalGlue.family scales hsel a ha c eta`.
+`family_classical` proves `ClassicalOn eta u R_eta a 1 c` for every eta>0.
+This predicate records continuity on `[a,1)×R3`, unit periods, differentiable
+time slices and C2 spatial slices on `(a,1)`, the PDE there, and initial data.
+`family_divergence_free` gives div R_eta=0 on `[a,1)`. Separate spatial
+smoothness is also proved. The definition's zero value at eta<=0 has no
+physical significance or theorem. `field_eq_slab` identifies this one field
+with every finite representative, not only the cofinal representatives
+used in its definition.
+
+For c=Bz0 e2, let I be Paper I's **actual constructed** ideal field
+`(MagneticPeriodicSolution.actualData ... a ha).magnetic Bz0`.
+`actual_family_comparison` states
+
+```
+forall b in (a,1), exists C_b >= 0,
+  forall eta > 0, t in [a,b], x in R3,
+    ||R_eta(t,x)-I(t,x)|| <= eta*C_b.                         (C)
+```
+
+It discharges every solution, gradient and ideal-Laplacian premise of the
+old `Comparison.actual_comparison_constant`. C_b is chosen before eta and
+is independent of it. The old sufficient constant is
+
+```
+D_b * sqrt((exp((2*L_b+1)*(b-a))-1)/(2*L_b+1)),
+||Du|| <= L_b,  ||Delta I|| <= D_b on [a,b]×R3.
+```
+
+There is no bound uniform as b approaches 1. The exponential weight used
+for mild existence can depend on eta and is not used as C_b.
+
+At a reference time after the existing `lateStart` threshold,
+`actual_ideal_path_norm` identifies the same I's exact norm:
+`||I(t,gamma(t))||=abs(Bz0)*((1-a)/(1-t))^K`.
+`actual_family_finite_gain` applies the existing `Comparison.family_finite_gain`
+to (C). For a nonzero Bz0, all data and the family precede G:
+
+```
+forall G>1, exists t_G in (a,1), exists eta_G>0,
+  forall eta in (0,eta_G),
+    G*abs(Bz0) <= ||R_eta(t_G,gamma(t_G))||.                   (G)
+```
+
+The proved choice is `t_G=1-(1-a)*(2*G)^(-1/K)`, where the ideal gain is
+2G, followed by `eta_G=G*abs(Bz0)/(1+C_[a,t_G])`. The denominator handles
+C=0. The triangle inequality, not resistive axial invariance, transfers
+the gain. No exponent or rpow argument is rederived here.
+
+`periodic_classical_finite_gain` closes the upstream parameters. It uses
+`ActualCandidateAssembly.selected_witness`, the same actual pressure and
+forcing, and `MagneticPeriodicMain.naturalSolution`. It returns:
+
+```
+exists scales with Selected scales, forcing, a with 0<a<1,
+  CandidateProperties u pressure forcing,
+  smooth forcing and the existing CandidateConsequences.Consequences,
+  exists family : Real -> MagneticField,
+    every eta>0 gives a classical spatially smooth divergence-free field
+      on [a,1), with the fixed seed e2,
+    and forall G>1, exists t_G in (a,1), eta_G>0,
+      forall eta in (0,eta_G), G <= ||family eta(t_G,gamma(t_G))||.
+```
+
+This is passive induction in the same forced viscosity-one NS velocity.
+The field is fixed for each eta before observation times or gain targets.
+
+### Proof outline: regularity of the same mild path
+
+The central issue is the Duhamel endpoint. The C0-to-C1 heat bound behaves
+like r^(-1/2), which is integrable. Differentiating it again without further
+structure would produce r^(-1), which cannot justify a second derivative.
+We instead propagate the smooth constant datum by spatial translations of
+the existing linear equation.
+
+For translation y, let S_y be the source built from u(t,x+y), Du(t,x+y).
+The actual smooth coefficient paths imply that y -> S_y is smooth in the
+uniform operator-path norm (`translatePath_contDiff`, `shiftedSource_contDiff`).
+The heat operators commute with translations (`heat_translate`,
+`heatC1_translate`, `heatKernel_translate`); thus `mild_translate` proves
+that the translated **existing** path satisfies precisely this translated
+mild equation. The constant initial datum is invariant under translations.
+
+Use the previously constructed exponential weight. Its convolution-source
+operator R_y satisfies ||R_0||<1. `LinearMild.mild_family_contDiffAt` uses
+smoothness of inversion near id-R_0, together with the actual mild equation,
+to prove smooth dependence of the weighted path on y. Cancelling the weight
+and translating the base point give `constant_seed_translation_contDiff`.
+No second fixed point or unrelated smoother witness is selected. Only the
+existing C1 path space and continuous spatial-jet paths are used; there is
+no all-orders Banach-space hierarchy.
+
+Bounded evaluation of the translation derivatives identifies actual spatial
+jets (`direction_apply`, `fieldPath_contDiff`, `spatial_jet_continuous`).
+In particular `magnetic_laplacianPath_eq` identifies an actual continuous
+Laplacian path in Y. This supplies the needed uniform-in-time regularity
+instead of inferring it from separate spatial smoothness.
+
+The time argument runs in Y, where the heat semigroup is strongly continuous.
+`mild_value_equation` forgets the C1 derivative entry. The semigroup law
+proves `value_heat_restart`. For a short step h, the new source integral is
+rescaled to h times an integral over `[0,1]`. Continuity of the source and
+heat action gives its derivative F(t) at h=0
+(`shortDuhamel_hasDerivAt_zero`). The existing uniform generator theorem
+contributes eta Delta B(t). A continuous right-derivative/FTC argument gives
+the interior strong derivative and its within-slab endpoint version
+(`mild_hasDerivAt_of_laplacianPath`,
+`mild_hasDerivWithinAt_of_laplacianPath`). Bounded point evaluation and the
+source's existing physical-time bridge then prove the pointwise PDE.
+
+### Divergence and compatible representatives
+
+A divergence PDE needs more than C2 spatial slices. The translation argument
+also gives smoothness of the source and time right-hand-side in spatial
+path variables. `mild_spatial_jet_time_derivative` uses the existing
+`EulerSmoothPathTimeJets` integral-identity theorem to commute spatial jets
+with the within-slab time derivative. Taking the first jet's trace gives
+`delta_hasDerivAt`. The purely spatial identity `spatial_divergence_rhs`
+commutes div and Delta and cancels the two cross contractions under div u=0.
+It applies to spatial slices, not an assumed jointly smooth evolving field.
+
+Consequently `delta_operator_zero` proves
+`(partial_t+u.grad-eta*Delta)(div B)=0` on the forward interior.
+The original continuous C1 path gives continuous divergence through a;
+the constant seed has divergence zero. `constant_mild_divergence_free`
+applies the existing periodic maximum principle to div B and -div B.
+`actual_constant_divergence_free` instantiates the actual velocity's proved
+incompressibility. This uses no backward-time parabolic extension.
+
+The old `actual_overlap` identifies finite mild paths before any PDE argument.
+`slabField_overlap` transfers equality to their physical fields. The gluing
+uses Paper I's existing cofinal endpoints and index. On each compact
+observation slab, `field_eq_slab` identifies the glued field with the same
+actual mild representative. Local equality transports time differentiation;
+whole-slice equality transports spatial jets, divergence and Laplacians.
+The family is therefore genuinely one field for each fixed eta, suitable
+for (C) on every observation slab.
+
+### Remaining obligations and limits
+
+For arbitrary `B_a : PeriodicC1`, the source supplied by C1 regularity is
+only C0; it cannot yet absorb another spatial derivative. The missing
+result is positive-time C2 regularity, with a continuous interior Laplacian
+path, for that same `actualPath`. A derived Hölder estimate with parabolic
+cancellation, or a proved interior bootstrap, is needed, followed by a
+localization of the time-derivative bridge to an interior subslab. It is not
+hidden in a construction structure. Constant-seed results (including (C) and (G)) have no such premise.
+
+The finite-gain theorem does not resolve the behavior of a fixed eta>0 near
+1: divergence, a finite maximum, or terminal decay are all undetermined.
+It supplies neither a sharp gain-versus-diffusivity law nor a magnetic
+length-scale exponent, eigen-curvature closure, useful numerical conductivity
+threshold, energy blow-up, stability/attraction, or whole-space resistive
+existence. Conditional curvature-mode calculations below stay conditional
+and separate from this actual PDE family. No Lorentz feedback, coupled MHD,
+or engineering performance statement is made. Further applications of
+energy identities must match the regularity/integrability assumptions of
+those particular identities; they are not additional conclusions of (G).
+
+### Current validation
+
+The targeted `ResistiveActualFiniteGain` build passes 9,428 jobs; full
+`lake build` passes **11,334 jobs**. The new
+`scripts/audit_resistive_classical.lean` checks every public named declaration
+in the 17 added modules (128), and 26 inherited construction dependencies:
+**154 checks**, all with only `propext`, `Classical.choice`, and `Quot.sound`.
+All nine previous audit scripts also pass their 687 checks: **841 total**,
+with no `sorryAx` in the audited dependency closures. No existing Lean file
+is modified, and no admission, axiom or placeholder declaration is added.
+The new modules emit no warnings; the four inherited challenge admissions
+and fourteen heat-module warnings remain unchanged.
+
+The [handoff](../MHD_PROGRESS.md) lists the exact module map, theorem names,
+assumptions and remaining general-data regularity obligation. The sections
+below are historical records of earlier checkpoints.
+
+## Historical finite-slab periodic mild checkpoint (after 106fc10)
 
 For the same selected prescribed velocity as Paper I, periodic mild induction
 solutions now exist on **every fixed a<b<1**, for every strictly positive
@@ -12,7 +245,8 @@ theorem statement is preserved.
 
 All names in this section are under `NavierStokes.ResistiveMagnetic` unless
 another namespace is given. Later sections record earlier checkpoints;
-their remaining-work descriptions are historical, superseded by this section.
+their remaining-work descriptions are historical. The current classical
+constant-seed checkpoint above supersedes the outstanding-work list here.
 
 ### Theorem, spaces, and actual parameters
 

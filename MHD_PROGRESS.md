@@ -1,6 +1,261 @@
-# MHDSingularity handoff: periodic C1 mild induction
+# MHDSingularity handoff: classical periodic resistive fields
 
-## Completed checkpoint after 106fc10: entire finite-slab mild construction
+## Current checkpoint after 6a9a5f0
+
+The same actual mild path is now classical for every **constant vector
+seed**, including the axial seed used by Paper I. One compatible field on
+`[a,1)` is constructed for each positive diffusivity, with divergence freedom
+and the actual fixed-slab comparison. The existing finite-gain argument is
+instantiated, including a closed theorem tied to the compatible NS witness.
+
+The requested arbitrary-`PeriodicC1` positive-time C2 upgrade remains
+unproved. This is an explicit general-data regularity gap, not a hypothesis
+in the constant-seed classical/finite-gain theorems. All previous Lean files
+and theorem statements are unchanged. The history below records earlier
+states; its outstanding-work descriptions are superseded by this section.
+
+### Exact objects, parameters, and regularity
+
+All new names below are under `NavierStokes.ResistiveMagnetic`, except where
+qualified otherwise. The spaces are unchanged:
+
+```
+X = PeriodicGaussian.PeriodicC1,
+  ||B||_X = max(sup_x ||B(x)||, sup_x ||DB(x)||_operator);
+Y = PeriodicGaussian.PeriodicField, ||f||_Y = sup_x ||f(x)||;
+PeriodicMild.Path T = C(Icc 0 T,X), with the uniform time norm.
+```
+
+The derivative data remain the actual derivatives (`c1_fderiv`). Space is
+the physical unit-periodic R3 cover. The source is the old unprojected
+`-DB[u]+Du[B]`. Heat variance remains `2*eta_m*tau`; magnetic diffusivity is
+not fluid viscosity. No mean restriction or whole-cover L2 requirement is
+introduced.
+
+For `scales : Nat -> Nat`, `hsel : MagneticPeriodicMain.Selected scales`,
+`a < b < 1`, `eta_m > 0`, and `c : Space`, define exactly
+
+```
+z = PeriodicMild.actualPath scales hsel a b hab hb eta_m heta (c1Constant c),
+B = PeriodicMild.physicalField a (b-a) (sub_nonneg.mpr hab.le) z.
+```
+
+`PeriodicClassicalGlue.actual_constant_classical` proves:
+
+- `ContinuousOn B (Icc a b ×ˢ univ)` and unit spatial periods on `[a,b]`;
+- `DifferentiableAt Real (fun s => B(s,x)) t` for `a<t<b` and every x;
+- `ContDiff Real ∞ (fun x => B(t,x))` for every `t∈[a,b]`;
+- `ResistiveInductionOn eta_m (Ioo a b) (MagneticPeriodicMain.velocity scales) B`;
+- `B(a,x)=c` and `spatialDivergence B t x=0` for `t∈[a,b]`.
+
+`actual_constant_spatial_jet_continuous` proves, for every natural n,
+joint continuity of the actual n-th spatial derivative of the clamped
+finite-slab field, including both endpoints. The more fundamental
+`PeriodicTranslation.fieldPath_contDiff` proves smoothness of
+`x -> (tau -> B(a+tau,x))` into the uniform time-path space.
+`magneticValues_translation_contDiff` and `laplacianPath_eq` also give the
+Laplacian as a continuous periodic uniform-space path. No joint spacetime
+C-infinity theorem is exported.
+
+The velocity is exactly `actualPeriodicVelocity budget threshold geometry
+scales`, with Paper I's canonical `MagneticPeriodicMain` parameters and
+`ActualPrimary` profile. `MagneticPeriodicCoefficient.actualOnSlab`
+discharges the smooth coefficient path and all spatial-jet continuity
+requirements. Its actual incompressibility is separately instantiated.
+Existence needs no late-start condition: every `a<b<1` is covered for
+constant seeds. Each bound can depend on the fixed slab and diffusivity;
+there is no terminal uniformity claim.
+
+### How the existing path becomes classical
+
+1. `LinearMild.convolutionCLM` bundles the **existing** Volterra convolution
+   linearly. `mild_family_contDiffAt` proves parameter regularity by inverting
+   `id - convolution ∘ coefficientMap` on the same continuous C1 path space.
+   The already proved exponential weight supplies the strict norm bound.
+   This is a local inverse argument, not another existence construction.
+2. `PeriodicTranslation.translatePath_contDiff` proves smooth translation
+   dependence of actual smooth coefficient paths. `mild_translate` proves
+   covariance of the original mild equation using the **same** heat operator,
+   its C1 lift, and its singular integral kernel. For a constant seed the
+   translated free path is unchanged. `constant_seed_translation_contDiff`
+   applies the inverse argument and cancels the weight, proving smooth
+   translation dependence of the original z. `actual_constant_translation_contDiff`
+   supplies `actual_mild` and the actual assembled coefficients.
+3. `PeriodicTranslation.direction_apply`, `laplacianPath_eq`, and
+   `magnetic_laplacianPath_eq` identify the resulting jets with actual spatial
+   derivatives and the project's `spatialLaplacian`. This proves regularity
+   through time zero in uniform path norms, not just separate spatial
+   smoothness. It uses the smooth constant datum; it does not claim derivative
+   gain for an arbitrary C1 datum.
+4. `PeriodicMild.mild_value_equation` passes the same C1 mild equation to Y.
+   `value_heat_restart` and `value_heat_restart_short` prove the exact restart
+   identity from the old physical semigroup. `shortDuhamel_hasDerivAt_zero`
+   rescales the short integral to `[0,1]`; its quotient tends to the continuous
+   source F(t) in Y. The old heat generator then gives
+   `value_heat_right_derivative`. No second-derivative r^(-1) integrability
+   assumption, temporal Hölder assumption, or dropped advection term occurs.
+5. `mild_hasDerivAt_of_laplacianPath` uses the continuous Laplacian path and
+   a Banach-valued right-derivative/FTC argument. The hypotheses of this
+   reusable lemma are proved for the actual constant-seed z.
+   `smooth_mild_hasDerivAt` gives the **strong Y derivative**
+   `z' = eta_m • laplacianEvolution z + valueSource S z` on `(0,T)`.
+   `smooth_mild_physical_hasDerivAt` commutes bounded evaluation and the
+   physical clock shift. `actual_constant_induction` identifies the actual
+   source and exports exactly
+
+   ```
+   temporalDerivative B t x + spatialDerivative B t x (u(t,x))
+     = spatialDerivative u t x (B(t,x))
+       + eta_m • spatialLaplacian B t x,          a<t<b.
+   ```
+
+`mild_hasDerivWithinAt_of_laplacianPath` proves a derivative *within* `[0,T]`
+at both endpoints. This supplies the forward endpoint hypothesis for the
+existing `EulerSmoothPathTimeJets.jetFamily_hasDerivWithinAt`; it asserts
+no two-sided derivative of the clamped field at an endpoint.
+
+### Divergence, compatibility, and one family
+
+`PeriodicTranslation.mild_spatial_jet_time_derivative` differentiates the
+proved time integral identity in space, in continuous path spaces.
+`delta_hasDerivAt` takes the trace of the first jet equation. The spatial
+identity `spatial_divergence_rhs` uses smooth spatial slices to commute
+divergence with the vector Laplacian and cancel the stretching/advection
+cross terms when `div u=0`; it does not impose joint spacetime smoothness.
+`delta_operator_zero` proves the scalar advection-diffusion equation for
+the actual divergence. `constant_mild_divergence_free` applies the existing
+`Slice.nonpos` to divergence and its negative. C1 path continuity supplies
+continuity of divergence at the initial endpoint, where the constant seed's
+divergence is zero. `actual_constant_divergence_free` discharges coefficient
+incompressibility with `MagneticPeriodicCoefficient.actual_divergence`.
+
+`PeriodicClassicalGlue.slabField` is exactly the old finite-slab physical
+field. `slabField_overlap` uses `PeriodicMild.actual_overlap`.
+`field` uses the cofinal endpoints/index already constructed by Paper I's
+`actualData`. `field_eq_slab` proves equality at all t,x in **any** observation
+slab `[a,b]`, not just one selected subsequence. The neighborhood equality
+`field_eventuallyEq` transports time derivatives and the PDE; whole spatial
+slice equality transports all spatial derivatives and divergence.
+
+`family scales hsel a ha c : Real -> MagneticField` is fixed after scales,
+a and c. For eta>0 it is `field ... eta heta (c1Constant c)`; for eta<=0 it is
+arbitrarily zero, with no physical theorem there. `family_classical` returns
+`ClassicalOn eta (velocity scales) (family ... eta) a 1 c`, recording continuity
+on `[a,1)`, periods, interior time differentiability/C2, the PDE and initial
+seed. `family_divergence_free` proves zero divergence for every t in `[a,1)`.
+Separate spatial smoothness is exported by `field_constant_spatial_smooth`.
+Different observation slabs never select different magnetic families.
+
+### Actual comparison and the closed finite-gain corollary
+
+`PeriodicClassicalGlue.actual_family_comparison` has only the selected
+schedule, real a,Bz0, `a<1`, and `a<b<1` as data/hypotheses. With
+`I=(actualData ... a ha).magnetic Bz0`, it proves
+
+```
+exists C >= 0, forall eta_m > 0, forall t in [a,b], forall x,
+  ||family scales hsel a ha (Bz0 • e2) eta_m (t,x)-I(t,x)|| <= eta_m*C.
+```
+
+No resistive field, scalar barrier, coefficient bound or comparison estimate
+is supplied as a hypothesis. The old `Comparison.actual_comparison_constant`
+chooses C before eta_m and uses the already proved ideal Laplacian/velocity
+bounds. Its sufficient value is
+`D*sqrt((exp((2*L+1)*(b-a))-1)/(2*L+1))`. L,D may depend on the prescribed
+velocity, seed and fixed slab, but not eta_m. The new existence weight is
+not substituted for this constant.
+
+`actual_ideal_path_norm` reuses Paper I's transport law for **that same**
+actual ideal witness. `actual_family_finite_gain` assumes Bz0!=0 and
+`lateStart ... naturalSolution < a < 1`, and proves
+
+```
+forall G > 1, exists t_G in (a,1), exists eta_G > 0,
+  forall eta_m in (0,eta_G),
+    G*abs(Bz0) <= ||family ... (Bz0 • e2) eta_m(t_G,gamma(t_G))||.
+```
+
+It is an immediate application of the existing `Comparison.family_finite_gain`:
+`t_G=1-(1-a)*(2*G)^(-1/K)`, with exact ideal gain 2G, and the conservative
+threshold `G*abs(Bz0)/(1+C_[a,t_G])`. The old positivity and rpow proofs are
+reused. No resistive axial invariance is asserted or needed.
+
+`periodic_classical_finite_gain` is closed: it instantiates
+`ActualCandidateAssembly.selected_witness`, uses the same pressure/forcing
+and `MagneticPeriodicMain.naturalSolution`, and chooses a late a with 0<a<1.
+It exports `CandidateProperties`, smooth forcing, and the existing
+`CandidateConsequences.Consequences` for that same viscosity-one NS velocity;
+then one fixed unit axial seed and one family with classical regularity,
+spatial smoothness, divergence freedom, and the displayed finite-gain
+quantifiers. No new upstream compatibility or magnetic-existence assumption
+remains in this closed theorem.
+
+### Exact remaining work and scope
+
+The requested general-data lemma is still missing: for arbitrary
+`B_a : PeriodicC1`, the same `actualPath` should have C2 spatial slices for
+`0<tau<T` and a continuous positive-time Laplacian path. One must also
+localize the right-derivative/FTC bridge to an interior subslab: `mild_hasDerivAt_of_laplacianPath` currently takes its Laplacian
+path through the supplied slab endpoints. C1 membership of z only makes
+`-Dz[u]+Du[z]` a C0 source; differentiating that source again requires another
+spatial derivative. The constant-seed translation proof does not provide
+this smoothing theorem. A valid Hölder/cancellation or interior bootstrap
+argument remains to be developed, without treating r^(-1) as integrable.
+There is no placeholder declaration for this missing result.
+
+Fixed-positive-diffusivity terminal divergence, a finite terminal maximum,
+terminal decay, a magnetic length-scale exponent, eigen-curvature closure,
+sharp gain/diffusivity asymptotics, useful numerical conductivity thresholds,
+magnetic-energy blow-up, stability/attraction and whole-space resistive
+existence remain unproved. Previously conditional curvature-mode results
+remain separate. The field is passive, with no Lorentz feedback or coupled
+MHD. The slab-dependent sufficient threshold is a mathematical bound, not
+an engineering prediction. No bound uniform at t=1 is claimed.
+
+### Validation and changed modules
+
+- Incremental builds pass. The final targeted command
+  `lake build NavierStokes.ResistiveActualFiniteGain` passes **9,428 jobs**.
+- Full `lake build` passes **11,334 jobs**. The new modules have no warnings.
+  The four inherited `ComparatorChallenges` admissions and fourteen existing
+  heat-module unused-section-variable warnings are unchanged.
+- `lake env lean scripts/audit_resistive_classical.lean` passes **154 checks**:
+  all 128 public named declarations in the 17 new modules, plus 26 explicit
+  inherited dependencies. Every check traverses its construction dependencies.
+  These include the actual mild path/uniqueness, weighted contraction, actual
+  coefficient path and incompressibility, heat generator, spatial/time jet
+  bridge, maximum principle, actual comparison, ideal field, exponent, transfer
+  theorem and compatible NS witness. All 154 use only `propext`,
+  `Classical.choice`, and `Quot.sound`; none uses `sorryAx`.
+- All nine previous audits pass their **687 checks**. Total: **841 checks**,
+  with only those standard axioms (or no axioms in older checks).
+- No previous Lean file is modified. No new `sorry`, `admit`, axiom or
+  placeholder declaration is present. The staged diff passes whitespace checks.
+
+| New module (under NavierStokes/) | Role |
+| --- | --- |
+| ResistivePeriodicTranslationRegularity.lean | Translation regularity in periodic coefficient path spaces |
+| ResistiveMildParameter.lean | Smooth inverse of the existing linear mild residual |
+| ResistivePeriodicTranslatedMild.lean | Exact translation covariance of source, heat and mild equation |
+| ResistivePeriodicPathJets.lean | Actual spatial jets from uniform translation derivatives |
+| ResistivePeriodicSmoothSeed.lean | Spatial smoothness of the same constant-seed actualPath |
+| ResistivePeriodicMildRestart.lean | Uniform-space equation and semigroup restart |
+| ResistiveMildRightDerivative.lean | Short Duhamel derivative and forward heat-generator bridge |
+| ResistiveMildToPDE.lean | Strong time derivative from a continuous actual Laplacian path |
+| ResistivePeriodicClassical.lean | Actual physical-time resistive PDE |
+| ResistivePeriodicTimeJets.lean | Mixed spatial/time jet equations through the forward endpoint |
+| ResistiveSpatialDivergence.lean | Spatial divergence of stretching/advection and diffusion |
+| ResistivePeriodicSolenoidal.lean | Actual divergence's scalar transport equation |
+| ResistivePeriodicDivergence.lean | Maximum-principle propagation, actual and glued fields |
+| ResistivePeriodicClassicalGlue.lean | One field and equality with every finite representative |
+| ResistivePeriodicClassicalResult.lean | Classical output predicate and actual constant-seed conclusions |
+| ResistiveActualClassicalComparison.lean | Diffusivity-independent comparison for the constructed family |
+| ResistiveActualFiniteGain.lean | Parameterized and closed actual finite-gain theorems |
+
+Also added: `scripts/audit_resistive_classical.lean`. Updated: README,
+this handoff and `Paper/ResistiveMagneticInduction.md`.
+
+## Historical checkpoint after 106fc10: entire finite-slab mild construction
 
 Continued the current local `main` without resetting. Five new Lean modules
 construct periodic positive-diffusivity mild solutions on every fixed

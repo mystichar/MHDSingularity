@@ -5,7 +5,76 @@ from the inherited OpenAI Navier–Stokes formalization. The magnetic field is
 passive: no Lorentz-force backreaction or coupled MHD solution is asserted.
 The inherited results and their attribution are retained below.
 
-## Periodic mild resistive induction on every fixed slab
+## Classical periodic resistive fields and finite gains
+
+For every constant seed `c : Space`, the **same** `PeriodicMild.actualPath`
+now gives a classical, divergence-free periodic induction field on every
+fixed `a < b < 1`, for every `eta_m > 0`. The velocity remains Paper I's
+selected forced viscosity-one velocity, and physical time remains `t=a+tau`.
+All previously committed Lean files and theorem statements are preserved.
+
+`PeriodicClassicalGlue.actual_constant_classical` proves joint continuity
+on the closed slab, unit periods, interior time differentiability, spatial
+smoothness, the physical resistive PDE, matching initial data, and divergence
+freedom including both endpoints. `actual_constant_spatial_jet_continuous`
+proves joint continuity of every spatial jet through those endpoints.
+`PeriodicMild.smooth_mild_hasDerivAt` gives the time derivative in the
+**uniform PeriodicField norm**. Joint spacetime C-infinity is not asserted.
+These names are under `NavierStokes.ResistiveMagnetic`.
+
+`PeriodicClassicalGlue.family` fixes one preterminal field per diffusivity
+after fixing the velocity, reference time and constant seed.
+`field_eq_slab` identifies its restriction with **every** corresponding
+finite-slab mild path. `family_classical` and `family_divergence_free` prove
+its classical PDE and solenoidality on `[a,1)`, with time derivatives and
+the PDE required only on `(a,1)`. No backward parabolic extension is used.
+
+For the axial seed `Bz0 • coordinateVector 2`,
+`actual_family_comparison` discharges the old comparison theorem's solution
+hypotheses for this family and Paper I's actual ideal witness:
+
+```
+for every a < b < 1, exists C_b >= 0,
+  for every eta_m > 0, t in [a,b], and x,
+    ||family eta_m (t,x) - Bideal(t,x)|| <= eta_m*C_b.
+```
+
+The constant precedes diffusivity and is independent of it. The closed
+`periodic_classical_finite_gain` instantiates the compatible upstream NS
+witness, fixes a unit axial seed, and proves:
+
+```
+exists prescribed NS data, a reference time a, and one family,
+  every eta_m > 0 has a classical divergence-free field on [a,1), and
+  for every G > 1, exists t_G in (a,1), eta_G > 0,
+    for every eta_m in (0,eta_G), ||family eta_m(t_G,gamma(t_G))|| >= G.
+```
+
+The parameterized `actual_family_finite_gain` also allows any nonzero Bz0
+at a reference time later than the existing transfer threshold. It uses
+the old comparison and ideal amplification results without assuming that
+the resistive field remains axial.
+
+**Remaining regularity gap:** positive-time C2 smoothing for an *arbitrary*
+initial member of `PeriodicC1` is not proved. Such data still have the old
+unique C1 mild solutions. The new classical results concern constant seeds:
+spatial translation dependence of the existing linear mild equation proves
+the required spatial jets, and a uniform-space restart argument proves the
+PDE. No nonintegrable second-derivative kernel bound is used.
+
+No result determines terminal behavior at one fixed positive diffusivity,
+a magnetic length-scale law, sharp gain thresholds, energy blow-up, or
+backreaction. The sufficient diffusivity threshold uses uncomputed slab
+bounds. See the [Paper II proof outline](Paper/ResistiveMagneticInduction.md)
+and [handoff](MHD_PROGRESS.md) for exact statements and the remaining work.
+
+Validation: the targeted build passes **9,428 jobs** and full `lake build`
+passes **11,334 jobs**. The new 154-check classical audit and all 687 previous
+checks pass: **841 total**, using only `propext`, `Classical.choice`, and
+`Quot.sound` (or no axioms). No `sorryAx` occurs in audited dependencies; no
+new admission or axiom is added. Existing Lean files are unchanged.
+
+## Periodic mild induction checkpoint (6a9a5f0)
 
 For Paper I's same selected periodic velocity, every `a < b < 1`, every
 `eta_m > 0`, and every `B_a : PeriodicC1`,
@@ -41,15 +110,14 @@ slabs use different weights; `solution_zero` covers zero data.
 physical time, the same Gaussian heat operator, and viscosity one. The field
 and its actual first spatial derivative are jointly continuous through both
 endpoints, its slices are C1, and it has unit periods and the stated initial
-data. **Classical resistive existence remains open:** the Duhamel term still
-needs interior time derivatives, C2 or higher induction regularity, a
-pointwise PDE bridge, and forward divergence preservation. No preterminal
-field is glued and no classical comparison or closed finite-gain theorem
-is applied to this mild solution.
+data. At this earlier checkpoint, classical regularity, the PDE, divergence
+preservation, gluing and comparison were unproved. The constant-seed results
+above now discharge those obligations; arbitrary-C1 positive-time smoothing
+remains open.
 
 See the [Paper II outline](Paper/ResistiveMagneticInduction.md) and
 [progress notes](MHD_PROGRESS.md) for exact statements, assumptions, and
-the next regularity obligations. All previously committed Lean files and
+the remaining regularity obligations. All previously committed Lean files and
 theorem statements are unchanged.
 
 Validation: `lake build NavierStokes.ResistivePeriodicMildActual` passes
