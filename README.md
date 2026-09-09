@@ -100,20 +100,52 @@ physical time with singular time `1`; neither needs a different time formula.
 `Bz0≠0`. They require **one fixed induction field on the entire interval
 `[a,1)`**, with path continuity and interior joint differentiability. They do
 not choose new magnetic fields on successive finite intervals. Periodicity of
-`B` is not needed for the pathwise theorem; it would be part of a future
-periodic existence construction.
+`B` is not needed for the pathwise theorem. The periodic existence
+construction below now supplies it.
 
 The generic `pure_axial_follows_scalar_ode` proves invariance of the axial line
 and its scalar ODE for any prescribed axial-column coefficient. No
 arbitrary-seed component formula is transferred to either assembled field:
 that would require an axial **row** identity, which is not proved here.
 
-Magnetic PDE existence and divergence preservation remain unproved. These
-results assert no finite-volume amplification, magnetic-energy blow-up,
-finite-resistivity growth, or coupled MHD blow-up. The next implementation plan
-in [MHD_PROGRESS.md](MHD_PROGRESS.md) describes a fixed-start periodic flow,
-its inverse, and one transported axial column, followed by compatible
-restriction/gluing to `[a,1)`. No flow-map placeholders were added.
+## Constructed periodic ideal-induction solution
+
+`MagneticPeriodicCoefficient.lean` adapts the actual selected periodic velocity
+to `SmoothTimeField`, using the compact periodic cell to bound every spatial
+jet on each finite slab. It discharges smoothness, periodicity, and
+incompressibility from the actual construction. Bounds may depend on `b<1`.
+
+`MagneticPeriodicFlow.actual_finite_slab` constructs a field on `[a,b]`,
+`a<b<1`, with constant seed `Bz0 e₂`. The fixed-start flow `Phi` and its inverse
+`Y` come from the existing bounded-flow API; `F` is defined as the actual
+spatial derivative of `Phi`. The field is
+`B(t,x)=Bz0 • (F(t,Y(t,x)) e₂)`. It is jointly continuous on the slab,
+jointly C1 at interior spacetime points, and spatially smooth at each slab
+time. The variational ODE proves stretching-form induction. Incompressibility
+gives `det F=1`; the existing Hessian-symmetry/determinant argument proves
+magnetic divergence freedom. No joint C-infinity claim is made.
+
+`MagneticPeriodicCompatibility.lean` proves flow, inverse, Jacobian, and
+magnetic-field agreement on overlaps with the same initial time.
+`MagneticPeriodicSolution.exists_actual_solution` glues an increasing cofinal
+family of finite slabs into **one** periodic, divergence-free classical field
+on `[a,1)`, for every `a<1` and constant axial seed.
+
+`MagneticPeriodicSolution.exists_actual_amplifying_solution` constructs that
+one field and derives both the exact power law and pathwise norm divergence
+for `lateStart<a<1` and `Bz0≠0`. It retains the actual selected schedule and
+natural-solution parameters. Induction, continuity, differentiability, and
+initial data are conclusions of construction, not assumed properties of `B`.
+The physical-time formula remains `((1-a)/(1-t))^K`.
+
+Remaining scope: no whole-space compact-seed existence construction,
+arbitrary-seed amplification transfer, resistivity, magnetic backreaction,
+finite-volume amplification, or magnetic-energy/coupled-MHD blow-up theorem.
+Validation: the full build passes (11,263 jobs); all 29 declarations in
+`scripts/audit_magnetic_periodic.lean` use only `propext`, `Classical.choice`,
+and `Quot.sound`. The build retains four unrelated inherited challenge
+`sorry` warnings. See [MHD_PROGRESS.md](MHD_PROGRESS.md) for exact statements,
+assumptions, and audit details.
 
 The Lake package name remains `NavierStokesAndEuler`, consistently in
 `lakefile.toml` and `lake-manifest.json`; MHDSingularity is the repository name.

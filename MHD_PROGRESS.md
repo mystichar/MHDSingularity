@@ -1,4 +1,179 @@
-# MHDSingularity handoff: assembled conditional magnetic amplification
+# MHDSingularity handoff: constructed periodic ideal induction
+
+## Current milestone: checkpoints A and B
+
+The existing exponent and amplification proofs are unchanged. New modules:
+
+- `MagneticPeriodicCoefficient.lean`: compact-cell coefficient adapter and
+  actual assembled periodic incompressibility.
+- `MagneticPeriodicFlow.lean`: physical-time flow, inverse, actual Jacobian,
+  finite-slab magnetic construction, regularity, induction, and divergence.
+- `MagneticPeriodicCompatibility.lean`: overlap compatibility of flows,
+  inverse flows, actual spatial derivatives, and transported fields.
+- `MagneticPeriodicSolution.lean`: cofinal gluing into one preterminal field
+  and existential periodic magnetic amplification.
+
+The earlier sections below are historical. Their statements that periodic
+magnetic existence or divergence preservation is unproved are superseded by
+this milestone. Whole-space compact-seed existence remains unproved.
+
+### Checkpoint A: exact construction and exported statements
+
+`MagneticPeriodicCoefficient.ofPeriodicSlab` converts a jointly smooth
+periodic field on a compact time set into `SmoothTimeField`. The bounded
+continuous field and every spatial jet use the existing periodic unit cube.
+Uniform continuity on that cube proves continuity in the uniform spatial
+norm. There is no bound assumed as `b` approaches one.
+
+`onSlab` and `actualOnSlab` use internal time `s=t-a` in `[0,b-a]`.
+`actualOnSlab_apply` states that the coefficient is precisely the actual
+selected velocity at physical time `a+s`. `actual_periodic` and
+`actual_divergence` discharge periodicity and divergence freedom, including
+localization of the direct angular series and the final time activation.
+
+In namespace `MagneticPeriodicFlow.Slab`:
+
+```text
+Phi t xi = data.forward (t-a) xi
+Y t x    = data.backward (t-a) x
+F t xi   = fderiv real (Phi t) xi
+magnetic Bz0 (t,x) = Bz0 • (F t (Y t x) e2)
+```
+
+`Phi_initial`, `Y_initial`, `Y_Phi`, and `Phi_Y` establish the fixed-start
+flow and its two-sided inverse. `Phi_hasDerivAt` states the actual physical
+ODE at every time in `[a,b]`. `F_eq_evolution` identifies the actual spatial
+derivative with the existing `jacobianEvolution`; `F_initial` gives the
+identity operator and `F_hasDerivAt` gives
+
+```text
+forall t in (a,b), HasDerivAt (fun s => F s xi)
+  ((spatialDerivative velocity t (Phi t xi)).comp (F t xi)) t.
+```
+
+`magnetic_Phi` is the exact pullback identity. Differentiating it, using the
+variational ODE, the material chain rule, and `Phi_Y`, proves
+`magnetic_induction`. `F_det_one` uses the existing trace-free linear
+evolution determinant theorem. `magnetic_divergence_free` instantiates
+`EulerPacketVolumeDivergence.divergence_pushforward` with the constant seed;
+that proved geometric identity uses Hessian symmetry and the determinant
+derivative. No C2 regularity of B is inferred from C2 regularity of Phi.
+
+`MagneticPeriodicFlow.actual_finite_slab` has the actual `budget`, `N0`,
+`hN`, `scales`, and `hsel : SelectedSchedule ... scales` parameters and states:
+
+```text
+forall a b Bz0, a < b -> b < 1 -> exists B,
+  (forall x, B(a,x) = Bz0 • e2) and
+  ContinuousOn B ([a,b] × univ) and
+  (forall t in (a,b), forall x, ContDiffAt real 1 B (t,x)) and
+  (forall t in [a,b], ContDiff real infinity (fun x => B(t,x))) and
+  UnitSpatialPeriodsOn [a,b] B and
+  IdealInductionOn (a,b) (actualPeriodicVelocity budget N0 hN scales) B and
+  (forall t in [a,b], forall x, spatialDivergence B t x = 0).
+```
+
+This theorem constructs its flow and its field. It assumes neither an
+induction solution nor a suitable flow wrapper.
+
+### Checkpoint B: one field and existential amplification
+
+`Slab.Phi_overlap` proves equality on intersecting slabs with equal velocity
+and initial time, by the bounded-flow Lipschitz estimate and Gronwall
+uniqueness. `F_overlap` differentiates equality of spatial maps, `Y_overlap`
+uses the two-sided inverse identities, and `magnetic_overlap` follows.
+
+`MagneticPeriodicSolution.Data.endpoints_spec` supplies a strictly increasing
+sequence in `(a,1)` tending to one. `Data.magnetic` defines one field from
+these slabs. `magnetic_eq_slab` proves independence of the chosen index on
+all of `[a,b_n]`; local equality transfers continuity at the initial boundary
+and interior C1 regularity, induction, and divergence freedom.
+`magnetic_spatial_smooth` additionally proves all finite spatial orders at
+each preterminal time. No joint C-infinity regularity is claimed.
+
+`ClassicalSolution u B a 1 Bz0` means exactly:
+
+```text
+ContinuousOn B ([a,1) × univ)
+forall t in (a,1), forall x, ContDiffAt real 1 B (t,x)
+UnitSpatialPeriodsOn [a,1) B
+forall t in [a,1), forall x, spatialDivergence B t x = 0
+IdealInductionOn (a,1) u B
+forall x, B(a,x) = Bz0 • e2.
+```
+
+`exists_actual_solution` states, with the same selected-schedule data:
+
+```text
+forall a Bz0, a < 1 -> exists B,
+  ClassicalSolution (actualPeriodicVelocity budget N0 hN scales) B a 1 Bz0.
+```
+
+`exists_actual_amplifying_solution` additionally retains
+`hs : NaturalProfile.IsNaturalSolution h nominal.axis.j Lambda P0 a0 f U V Pr`.
+For `lateStart budget N0 hN scales hsel hs < a < 1` and `Bz0 != 0`, it states:
+
+```text
+exists B,
+  ClassicalSolution (actualPeriodicVelocity budget N0 hN scales) B a 1 Bz0 and
+  (forall t in [a,1),
+    B(t,gamma t) = (Bz0 * ((1-a)/(1-t))^K) • e2) and
+  Tendsto (fun t => norm (B(t,gamma t))) (nhdsWithin 1 (Iio 1)) atTop.
+```
+
+Here `gamma` and `K` are precisely the existing distinguished trajectory and
+`axialExponent nominal.axis.small`. The proof derives every magnetic
+hypothesis before applying the existing conditional amplification theorems.
+It never chooses unrelated induction fields on successive intervals.
+
+### Upstream assumptions and exact scope
+
+The coefficient adapter uses the smooth sums already included in the
+actual `SelectedSchedule`; it introduces no additional smoothness, bound,
+flow-existence, or magnetic-solution assumption. The nonlinear flow is the
+existing `EulerSmoothBanachFlow.flowData` construction, with its Picard flow,
+path-space smooth dependence, constructed Jacobian evolution, invertibility,
+and determinant-one theorem. The inverse C1 proof specializes the existing
+smooth implicit-lift machinery. The selected schedule remains an explicit
+parameter; its upstream existence is provided by
+`ActualCandidateAssembly.selected_witness`, not reselected by this milestone.
+The natural-solution hypothesis remains explicit in amplification only; it
+is not needed for the ideal-induction existence theorem itself.
+
+All exported statements use the existing viscosity-one assembled periodic
+velocity and physical singular time one. The internal shift cancels on export;
+there is no different physical-time power law and no new viscosity rescaling.
+
+No remaining gap within the two requested periodic checkpoints is advertised
+as an assumption on B. Scope still excluded: whole-space compact-seed
+construction, arbitrary-seed amplification transfer, resistivity, Lorentz
+backreaction, finite-volume amplification, magnetic-energy blow-up, and
+coupled MHD blow-up. The norm-divergence conclusion is along one trajectory.
+
+### Validation
+
+- Targeted build of `NavierStokes.MagneticPeriodicSolution` passed, including
+  all four new modules. The final spatial-regularity addition was checked by
+  the subsequent full build.
+- Full `lake build` passed: 11,263 jobs. It replayed four pre-existing
+  `sorry` warnings in `ComparatorChallenges/Euler.lean` and
+  `ComparatorChallenges/NavierStokes.lean`; none are in the new proof chain.
+- `lake env lean scripts/audit_magnetic_periodic.lean` passed. All 29 audited
+  declarations depend only on `propext`, `Classical.choice`, and `Quot.sound`.
+  This includes both actual existence theorems and the existential
+  amplification/norm-divergence theorem. There is no `sorryAx` dependency.
+- The separate checkpoint-A audit passed for the actual velocity divergence,
+  Jacobian identification, variational ODE, determinant, magnetic divergence,
+  and `actual_finite_slab`, with the same three axioms.
+- No `sorry`, `admit`, or new axiom declaration occurs in the new modules.
+  `git diff --check` passed. Existing amplification and gradient files are
+  unchanged.
+
+The audit script is retained in the repository for reproduction.
+
+---
+
+# Historical handoff: assembled conditional magnetic amplification
 
 ## Current milestone after local commit 07a694d
 
