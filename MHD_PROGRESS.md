@@ -1,6 +1,210 @@
-# MHDSingularity handoff: physical periodic heat interface
+# MHDSingularity handoff: periodic C1 mild induction
 
-## Heat checkpoint after 9618457
+## Completed checkpoint after 106fc10: entire finite-slab mild construction
+
+Continued the current local `main` without resetting. Five new Lean modules
+construct periodic positive-diffusivity mild solutions on every fixed
+preterminal slab. Every previously committed Lean file and theorem statement
+is unchanged. This is an actual construction, not a supplied-solution theorem.
+
+All namespaces below are inside `NavierStokes.ResistiveMagnetic`. Physical
+space is the unit-periodic cover of Euclidean R3. The prescribed velocity is
+exactly `MagneticPeriodicMain.velocity scales`, equivalently
+`actualPeriodicVelocity budget threshold geometry scales`, with Paper I's
+canonical budget, threshold, geometry, and `Selected scales` condition.
+There is no new schedule/profile, fluid-viscosity change, or time rescaling.
+Magnetic diffusivity `eta_m` remains a separate positive real parameter.
+
+### Exact function spaces and source
+
+`X = PeriodicGaussian.PeriodicC1` is the existing complete derivative graph,
+with norm `max(||B||_infinity, ||DB||_infinity)`; its derivative is identified
+by `c1_fderiv`. `Y = PeriodicGaussian.PeriodicField` is the complete continuous
+periodic uniform space. Constants are included, with no mean restriction,
+whole-cover L2 requirement, vector potential, or solenoidal projection.
+`PeriodicMild.Path T = C(Icc 0 T, X)` has the time-supremum of the C1 norm.
+`Coefficient T = C(Icc 0 T, X ->L[Real] Y)` has the uniform operator norm.
+
+`ResistivePeriodicSource.lean` exports:
+
+- `PeriodicSource.sourceOperator u G : X ->L[Real] Y`, with exact value
+  `-(c1Derivative B)(x) (u(x)) + G(x) ((c1Value B)(x))`.
+  Continuity, unit periods, additivity and scalar linearity are proved in
+  the constructed periodic field and bounded-linear-map objects.
+- `sourceOperator_opNorm_le`: bounds `||u||<=U`, `||G||<=L` imply
+  `||sourceOperator u G||<=U+L`. `sourceOperator_lipschitz` gives the same
+  global Lipschitz bound on all X. `sourceOperator_continuous` is continuity
+  in operator norm, obtained from the bounded bilinear `pairing`.
+- `sourceOperator_eq_source` identifies the operator with the existing
+  `Comparison.source = -DB[u]+Du[B]` when G is the actual velocity derivative.
+  It uses `c1_fderiv`, with no smoothness assumption beyond membership in X.
+- `actualVelocityPath` and `actualSourcePath scales hsel a b hb` construct
+  the actual continuous coefficient paths from
+  `MagneticPeriodicCoefficient.actualOnSlab`, including its actual spatial
+  derivative path. `actualVelocityPath_value`,
+  `actualVelocityPath_derivative`, and `actualSourcePath_eq_source` identify
+  the physical time as `a+tau`.
+- `actualSourcePath_bound` proves `||S(tau) B|| <= ||S||*||B||` throughout
+  `[0,b-a]`. Thus A=`||S||>=0` is finite and chosen before eta_m or B_a.
+  No bound through time 1 is used.
+
+### Whole-slab weighting and existence
+
+`ResistiveWeightedVolterra.lean` defines
+`weightedKernel K lambda r = exp(-lambda*r) • K r` and
+`weightedMajorant k lambda r = exp(-lambda*r)*k(r)`.
+`weightedKernel_continuous`, `weightedKernel_bound`, and
+`weightedMajorant_integrable` prove the needed analytic hypotheses.
+`WeightedVolterra.weightedMass_tendsto_zero` states, for every k integrable
+on `(0,T]`,
+
+```
+lim_(n : Nat -> infinity) Integral_(0,T] exp(-n*r)*k(r) dr = 0.
+```
+
+Dominated convergence uses `|k|` and r>0, never a false limit at r=0.
+`exists_weight` chooses n with weighted mass times A at most 1/2; it includes
+A=0 without division. The original kernel is
+`PeriodicGaussian.heatKernel eta_m heta`, its majorant is the completed
+`1 + heatConstant/sqrt(eta_m*r)`, and its variance remains `2*eta_m*r`.
+
+`ResistiveLinearMild.lean` proves a reusable globally linear Volterra theorem
+in real normed X,Y, with X complete for existence. `LinearMild.IsMild` is
+only the displayed integral equation. `duhamel_integrable` proves genuine
+Bochner integrability for continuous paths. `weight` and `unweight` prove
+exact equivalence with the weighted equation using source/kernel linearity,
+the exponential identity, and scalar multiplication through the integral.
+Clamping agrees with `tau-r` at every integration time.
+
+`LinearMild.exists_unique_of_weight` applies the existing
+`EulerVolterraConvolution.exists_mild_solution` with N=`||free||`,
+R=`2*N+1`, M=`A*R`, and Lipschitz constant A. Weighted mass times A is at most
+1/2. The free-path norm is at most N; both invariant-ball and strict
+contraction inequalities are proved. A second estimate gives `||Z||<=2*N`,
+and recovering `z(tau)=exp(n*tau) • Z(tau)` removes the weight completely.
+`exists_unique` chooses n before quantifying over the free path.
+
+`ResistivePeriodicMild.lean` instantiates every heat and completeness premise:
+
+```
+PeriodicMild.exists_mild
+  (T : Real) (hT : 0 <= T) (eta_m : Real) (heta : 0 < eta_m)
+  (S : Coefficient T) (B_a : PeriodicC1) :
+  exists z : Path T,
+    Mild T hT eta_m heta S B_a z /\
+    ||z|| <= 2*exp(contractionWeight(T,hT,eta_m,heta,S)*T)*||B_a|| /\
+    forall w, Mild T hT eta_m heta S B_a w -> w = z.
+```
+
+Here `Mild` is exactly, for every tau in `[0,T]`,
+
+```
+z(tau) = heatC1 eta_m tau B_a
+       + integral_0^tau heatKernel eta_m heta r
+           (S(projIcc(0,T,tau-r))(z(projIcc(0,T,tau-r)))) dr.
+```
+
+`mild_integrable` proves this integral is Bochner integrable in C1.
+`mild_initial` gives z(0)=B_a. `solution` chooses the proved witness;
+`solution_mild`, `solution_bound`, and `solution_zero` export its equation,
+finite bound and zero-data behavior. `contractionWeight` has no initial-data
+argument. Its size can depend on eta_m, the prescribed velocity and slab;
+the resulting bound is not a diffusivity-independent comparison estimate.
+
+### Uniqueness, physical field, and actual instantiation
+
+`PeriodicMild.mild_unique` proves equality of **any two** continuous C1
+paths satisfying the same original mild equation. No construction ball,
+weight, classical PDE, time derivative, or C2 hypothesis remains. Its proof
+weights arbitrary paths and uses global source linearity; the ball needed
+by the inherited mild uniqueness API is chosen after those paths are given.
+`recovered_unique` proves independence from any two auxiliary weights.
+`mild_restrict` and `solution_restrict` restrict the unweighted equation and
+identify constructed restrictions using uniqueness.
+
+`ResistivePeriodicMildActual.lean` constructs
+`actualPath scales hsel a b hab hb eta_m heta B_a`. In particular,
+`PeriodicMild.actual_exists_mild` has assumptions exactly
+
+```
+scales : Nat -> Nat, hsel : MagneticPeriodicMain.Selected scales,
+a b : Real, hab : a < b, hb : b < 1,
+eta_m : Real, heta : 0 < eta_m, B_a : PeriodicC1.
+```
+
+It returns a mild path for `actualSourcePath scales hsel a b hb`, a jointly
+continuous physical field with unit periods and spatial C1 slices, matching
+initial data, and uniqueness among all paths for these same data.
+`actual_axial_exists` specializes to `c1Constant (Bz0 • coordinateVector 2)`
+for every real Bz0, including zero. No late-start condition is needed for
+mild existence; the theorem covers every a<b<1. The compatible selected
+schedule remains explicit, as permitted for this reusable theorem. No
+additional upstream compatibility or magnetic-existence assumption is added.
+
+`physicalField a T hT z` evaluates the path at clamped elapsed time t-a.
+`physicalField_at_elapsed` identifies the exact slice at physical time a+tau.
+`physicalField_continuous`, `physicalField_periodic`,
+`physicalField_spatialC1`, `physicalField_spatialDerivative`, and
+`physicalField_derivative_continuous` export the actual regularity. The field
+AND its actual first spatial derivative are jointly continuous through the
+closed slab. Clamping gives a continuous extension outside it, not an
+induction equation outside it.
+
+`actual_physical_mild_equation` gives the same equation after bounded spatial
+evaluation, with the original physical Gaussian heat operator.
+`actualSourcePath_eq_field_source` identifies its integrand with the actual
+evolving field's `-DB[u]+Du[B]` at time a+tau-r. The heat operator is identity
+at elapsed time zero; the singular integration kernel is zero there. Their
+difference at that point does not affect the integral.
+`actual_bound` supplies the bound above for the same actual path.
+`actual_restrict` and `actual_overlap` prove C1-valued agreement for any two
+fixed slabs with the same scales, a, eta_m and B_a, even with different weights.
+
+### Validation of the mild checkpoint
+
+- Incremental builds of all five new modules pass. The final target
+  `lake build NavierStokes.ResistivePeriodicMildActual` passes, 9,396 jobs.
+- Full `lake build` passes, 11,317 jobs. The new modules emit no warnings.
+  Four inherited `ComparatorChallenges` admissions and fourteen existing
+  heat-module unused-section-variable warnings remain unchanged.
+- `lake env lean scripts/audit_resistive_mild.lean` passes 116 transitive
+  checks: all 95 new named declarations and 21 explicit dependencies. These
+  include derivative-graph completeness/identification, the physical heat
+  kernel and its bounds, actualOnSlab, dominated convergence, and the existing
+  Volterra fixed-point, convolution and mild uniqueness theorems.
+- All eight previous audit scripts pass their 571 checks. The nine scripts
+  total 687 successful checks, with only `propext`, `Classical.choice` and
+  `Quot.sound`, or no axioms. No `sorryAx` occurs in audited dependencies.
+- No new `sorry`, `admit`, axiom, or placeholder declaration is present.
+  All previously committed Lean files are unchanged; `git diff --check` passes.
+
+### Next task and stopping point
+
+This checkpoint is complete at the **continuous C1-valued mild** level.
+The source, weighted fixed point, entire fixed-slab bound, all-class mild
+uniqueness, and restriction/overlap obligations are discharged. Short-time
+subdivision or mild continuation was not needed and is not also implemented.
+
+Still unproved for this constructed witness: interior time differentiability,
+spatial C2 or higher induction regularity, the classical pointwise resistive
+PDE, and forward-endpoint divergence preservation. Homogeneous heat smoothing
+does not justify these properties for the Duhamel integral: its endpoint r=0
+requires separate estimates. If further regularity is constructed in stronger
+spaces, equality with THIS C1 path must be proved, using mild uniqueness.
+Preterminal gluing is outside this run; overlap compatibility alone is not
+an exported field on `[a,1)`. The classical comparison and closed finite-gain
+theorem cannot yet be applied to these paths.
+
+No result here assumes or determines an eigen-curvature closure, magnetic
+length scale, fixed-positive-diffusivity terminal behavior, sharp gain law,
+energy blow-up, stability, attraction, backreaction, or coupled MHD. These
+finite existence bounds are not numerical conductivity thresholds.
+
+The earlier checkpoints below are historical records. Their descriptions
+of outstanding work refer to their respective commits; this section is the
+current handoff.
+
+## Historical heat checkpoint after 9618457
 
 Continued from the clean local main at 9618457 without resetting. Every
 pre-existing Lean file is preserved. Twelve new modules construct the

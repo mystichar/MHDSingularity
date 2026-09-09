@@ -5,6 +5,60 @@ from the inherited OpenAI Navier–Stokes formalization. The magnetic field is
 passive: no Lorentz-force backreaction or coupled MHD solution is asserted.
 The inherited results and their attribution are retained below.
 
+## Periodic mild resistive induction on every fixed slab
+
+For Paper I's same selected periodic velocity, every `a < b < 1`, every
+`eta_m > 0`, and every `B_a : PeriodicC1`,
+`PeriodicMild.actual_exists_mild` constructs a unique continuous
+`PeriodicC1`-valued path on `[0,b-a]`. `actual_axial_exists` includes the
+constant seed `Bz0 • coordinateVector 2`, without a zero-mean or cover-L2
+condition. These names are in `NavierStokes.ResistiveMagnetic`.
+
+`PeriodicSource.sourceOperator` is the actual unprojected bounded linear
+C1-to-C0 source `-DB[u] + Du[B]`, with operator norm at most `U+L` under
+the respective uniform bounds on u and Du. `actualSourcePath` obtains an
+operator-norm continuous coefficient path from `actualOnSlab`; no magnetic
+solution or coefficient wrapper is assumed.
+
+With `T=b-a`, the constructed path satisfies the original equation in C1:
+
+```
+z(tau) = heatC1 eta_m tau B_a
+       + integral_0^tau heatKernel eta_m r (Source(a+tau-r,z(tau-r))) dr.
+```
+
+The integral is proved Bochner integrable in the complete space with norm
+`max(||B||_infinity, ||DB||_infinity)`. Exponential weighting makes the
+existing Volterra theorem a contraction on the entire fixed slab, then
+cancels exactly. For a proved choice `n : Nat`, made before `B_a`,
+`||z|| <= 2*exp(n*T)*||B_a||`. The weight and bound can depend on diffusivity,
+velocity, and slab; this is not the diffusivity-independent comparison bound.
+`mild_unique` quantifies over **all** continuous C1 paths satisfying the
+equation. `actual_restrict` and `actual_overlap` prove agreement even when
+slabs use different weights; `solution_zero` covers zero data.
+
+`actual_physical_mild_equation` and `actualSourcePath_eq_field_source` retain
+physical time, the same Gaussian heat operator, and viscosity one. The field
+and its actual first spatial derivative are jointly continuous through both
+endpoints, its slices are C1, and it has unit periods and the stated initial
+data. **Classical resistive existence remains open:** the Duhamel term still
+needs interior time derivatives, C2 or higher induction regularity, a
+pointwise PDE bridge, and forward divergence preservation. No preterminal
+field is glued and no classical comparison or closed finite-gain theorem
+is applied to this mild solution.
+
+See the [Paper II outline](Paper/ResistiveMagneticInduction.md) and
+[progress notes](MHD_PROGRESS.md) for exact statements, assumptions, and
+the next regularity obligations. All previously committed Lean files and
+theorem statements are unchanged.
+
+Validation: `lake build NavierStokes.ResistivePeriodicMildActual` passes
+(9,396 jobs), and full `lake build` passes (**11,317 jobs**). The new
+116-check mild audit and all 571 previous checks pass: **687 total**, using
+only `propext`, `Classical.choice`, and `Quot.sound`, or no axioms. No
+`sorryAx` occurs in the audited dependencies. No admissions or axioms were
+added; the four inherited challenge admissions remain unchanged.
+
 ## Physical periodic heat interface
 
 The existing three-dimensional periodic Gaussian operators now have a proved
@@ -27,13 +81,11 @@ supplied C2 periodic input, including eta_m=0. `heat_contDiff_two`,
 actual heat equation from merely continuous input. No joint C-infinity or
 operator-norm continuity at time zero is claimed.
 
-**Resistive induction existence is still open.** This checkpoint stops at the
-physical heat interface. The [Paper II handoff](Paper/ResistiveMagneticInduction.md)
-lists the exact Volterra spaces/kernel, remaining source estimates,
-continuation, classical regularity, divergence preservation, and gluing work.
-All pre-existing Lean files and theorem statements remain unchanged.
+This heat interface supplies the kernel for the mild construction above.
+Its positive-time smoothing does not itself prove higher regularity of
+the induction Duhamel integral at its singular integration endpoint.
 
-Validation: the targeted heat build and full `lake build` pass (**11,312
+Heat-checkpoint validation: the targeted heat build and full `lake build` pass (**11,312
 full-build jobs**). The new heat audit passes 213 checks, and all 358 previous
 magnetic checks pass: **571 total**, using only `propext`, `Classical.choice`,
 and `Quot.sound` (or no axioms). No admitted proof or axiom is added. The four
@@ -70,11 +122,11 @@ one ideal field for each seed, then a constant for each slab, **before**
 diffusivity and the supplied resistive field. `resistive_unique` and
 `actual_resistive_unique` prove forward uniqueness in this class.
 
-**Resistive existence remains open.** No solution family on `[a,1)` or closed
-finite-gain theorem is constructed here. The physical heat interface is now
-available; the source, Volterra construction, and induction-regularity
-obligations remain. The ideal Laplacian bound and scalar comparison principle
-are discharged. No estimate is uniform through
+**Classical resistive existence remains open.** No classical solution family
+on `[a,1)` or closed finite-gain theorem is constructed here. The finite-slab
+mild paths above still need the induction regularity and PDE bridge required
+by this comparison. The ideal Laplacian bound and scalar comparison principle
+are discharged. No comparison estimate is uniform through
 `t=1`, and fixed-positive-diffusivity terminal behavior is undetermined.
 All prior Lean proofs are unchanged. See [the Paper II proof outline](Paper/ResistiveMagneticInduction.md)
 and [the handoff](MHD_PROGRESS.md) for exact statements and validation.

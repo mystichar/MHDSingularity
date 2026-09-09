@@ -1,6 +1,248 @@
 # Paper II: passive resistive induction and fixed-slab comparison
 
-## Physical periodic heat interface (after 9618457)
+## Actual finite-slab periodic mild solutions (after 106fc10)
+
+For the same selected prescribed velocity as Paper I, periodic mild induction
+solutions now exist on **every fixed a<b<1**, for every strictly positive
+magnetic diffusivity and every initial field in the completed periodic C1
+space. They are unique among all continuous paths in that space and agree
+on overlaps with the same starting data. This does not yet construct a
+classical resistive PDE solution. Every previously committed Lean file and
+theorem statement is preserved.
+
+All names in this section are under `NavierStokes.ResistiveMagnetic` unless
+another namespace is given. Later sections record earlier checkpoints;
+their remaining-work descriptions are historical, superseded by this section.
+
+### Theorem, spaces, and actual parameters
+
+Let X=`PeriodicGaussian.PeriodicC1`, the complete graph of the actual spatial
+derivative, and Y=`PeriodicGaussian.PeriodicField`, the continuous periodic
+uniform space on physical R3. The norms are
+
+```
+||B||_X = max(sup_x ||B(x)||, sup_x ||D B(x)||_operator),
+||f||_Y = sup_x ||f(x)||,
+||z||_Path = sup_(0<=tau<=T) ||z(tau)||_X.
+```
+
+All fields have unit coordinate periods. The constants belong to X; there
+is no mean-zero restriction, whole-cover L2 condition or periodic-vector-
+potential assumption. `c1_fderiv` identifies the stored derivative with the
+actual Frechet derivative at every spatial point.
+
+The assumptions of `PeriodicMild.actual_exists_mild` are exactly:
+
+```
+(scales : Nat -> Nat) (hsel : MagneticPeriodicMain.Selected scales)
+(a b : Real) (hab : a < b) (hb : b < 1)
+(eta_m : Real) (heta : 0 < eta_m) (B_a : PeriodicC1).
+```
+
+The source uses
+`u = actualPeriodicVelocity budget threshold geometry scales`, with the
+canonical `MagneticPeriodicMain` budget, threshold and geometry. This is
+the same `MagneticPeriodicMain.velocity scales` already linked to the forced
+viscosity-one NS theorem. The compatible selected schedule remains explicit
+in this reusable theorem; no new schedule, natural profile, upstream
+compatibility hypothesis, or supplied magnetic solution is introduced.
+There is no late-start condition for this existence result. Magnetic
+diffusivity is a separate parameter; elapsed time is exactly tau=t-a.
+
+For T=b-a and S=`PeriodicSource.actualSourcePath scales hsel a b hb`, the
+theorem constructs z in `PeriodicMild.Path T = C(Icc 0 T,X)` satisfying
+
+```
+z(tau) = heatC1 eta_m tau B_a
+       + integral_0^tau heatKernel eta_m heta r
+           (S(tau-r)(z(tau-r))) dr,        0 <= tau <= T.             (M)
+```
+
+In Lean, `projIcc 0 T hT` extends the path arguments inside the integral;
+it is the identity on tau-r throughout its integration interval. This is
+`PeriodicMild.Mild`, unfolded by `mild_equation`; `mild_integrable` proves
+Bochner integrability of the displayed X-valued integrand, independently of
+any claimed equation. `mild_initial` gives z(0)=B_a. The homogeneous operator
+is the existing physical heat operator in C1, with variance `2*eta_m*tau`.
+`heatC1 eta_m 0` is identity. `heatKernel eta_m heta 0` is zero as an
+integration convention; their values at zero are not identified.
+
+`PeriodicMild.actualPath` chooses the proved witness. `actual_mild` exports
+(M); `actual_bound` exports its finite path bound. `actual_axial_exists`
+specializes B_a to `c1Constant (Bz0 • coordinateVector 2)` for any real Bz0,
+including nonzero constant axial seeds and zero data.
+
+The physical field is
+`B(t,x) = (c1Value (z (projIcc 0 T hT (t-a)))).val x`.
+The conclusions of `actual_exists_mild` include joint continuity, unit
+periods, C1 spatial slices, the initial identity B(a,x)=B_a(x), and uniqueness
+in the entire continuous C1 path class. Further exports
+`physicalField_spatialDerivative` and `physicalField_derivative_continuous`
+identify DB with `c1Derivative` and prove its joint continuity, including
+both endpoints. The clamped extension is continuous outside the slab; the
+equation is asserted only on the slab. `actual_physical_mild_equation`
+commutes bounded evaluation with the Bochner integral to export (M) for the
+physical field using the original Space-valued Gaussian heat operator.
+`actualSourcePath_eq_field_source` identifies the source there with the
+evolving physical field's source at a+tau-r.
+
+### Source construction and the coefficient bound
+
+The bounded bilinear map `PeriodicSource.pairing` applies a periodic
+continuous-linear-map-valued field to a periodic vector field. It proves
+the bound `||G f||_Y <= ||G||_infinity*||f||_Y`, with continuity and periods
+established pointwise. Combining it with `c1Value` and `c1Derivative` gives
+the constructed bounded linear operator
+
+```
+sourceOperator(v,G) B (x) = -DB(x)[v(x)] + G(x)[B(x)].
+```
+
+`sourceOperator_eq_source` identifies this with the existing `Comparison.source`
+when v=u(t) and G=Du(t). It uses only actual C1 derivative data, not an older
+smooth-input estimate. There is no solenoidal projection or modified equation.
+Linearity is certified by the bounded-linear-map object.
+`sourceOperator_opNorm_le` and `sourceOperator_lipschitz` prove the operator
+and global Lipschitz bounds U+L from `||v||<=U`, `||G||<=L`.
+
+`ofSmoothTimeField` uses the actual coefficient and derivative paths in
+the existing flow API. Applied to
+`MagneticPeriodicCoefficient.actualOnSlab`, with its proved physical periods,
+it constructs `actualVelocityPath` in continuous C1 paths. Its value and
+derivative are identified with u(a+tau) and Du(a+tau). Bounded bilinearity
+then gives the **operator-norm continuous** path `actualSourcePath`.
+Consequently A=`||S||>=0` is a finite uniform bound independent of eta_m
+and B_a. `actualSourcePath_bound` proves `||S(tau)B||<=A*||B||`. A can depend
+on the selected velocity and the fixed slab. No terminal bound is assumed.
+
+### Exponential weighting on the entire slab
+
+Set K=`heatKernel eta_m heta` and
+k(r)=`kernelMajorant eta_m r = 1+heatConstant/sqrt(eta_m*r)`.
+For a nonnegative integer n define
+
+```
+K_n(r) = exp(-n*r) • K(r),
+k_n(r) = exp(-n*r)*k(r),
+f_n(tau) = exp(-n*tau) • heatC1 eta_m tau B_a.
+```
+
+`WeightedVolterra.weightedKernel_continuous`, `weightedKernel_bound`, and
+`weightedMajorant_integrable` verify the kernel hypotheses of the existing
+abstract theorem. `weightedMass_tendsto_zero` uses dominated convergence on
+`(0,T]`: for each r>0 the exponential tends to zero as n tends to infinity,
+and the majorant is bounded by the already integrable |k|. It follows from
+`exists_weight` that n can be chosen, **before B_a**, with
+
+```
+theta = A * integral_(0,T] k_n(r) dr <= 1/2.
+```
+
+This argument includes A=0 without dividing by A. The nonnegative integer
+`PeriodicMild.contractionWeight T hT eta_m heta S` depends only on T, eta_m
+and S (and their proofs). No new normed-space hierarchy is introduced.
+
+Let N=`||B_a||_X`. Heat contraction and exp(-n*tau)<=1 give `||f_n||<=N`.
+For R=2N+1 and M=A R, the source is bounded by M and is A-Lipschitz on
+the radius-R ball. The two required budgets are
+
+```
+||f_n|| + (integral k_n)*M <= N + R/2 <= R,
+(integral k_n)*A <= 1/2 < 1.
+```
+
+`LinearMild.exists_unique_of_weight` proves these inequalities and invokes
+`EulerVolterraConvolution.exists_mild_solution`. It obtains an actual fixed
+point Z. Source and kernel linearity give
+
+```
+exp(-n*tau) K(r) S(tau-r) z(tau-r)
+  = K_n(r) S(tau-r) (exp(-n*(tau-r)) • z(tau-r)).
+```
+
+`LinearMild.weight` and `unweight` prove the corresponding Bochner integral
+identities. Thus z(tau)=exp(n*tau)•Z(tau) satisfies exactly (M). There is no
+residual damping term. `duhamel_integrable` justifies the original integral
+using continuity of the source path, finite path norms and k; the weighted
+integral is justified by the same lemma with k_n.
+
+The fixed-point inequality further gives `||Z||<=N+theta*||Z||<=N+||Z||/2`,
+so `||Z||<=2N`. `solution_bound` and `actual_bound` therefore give
+
+```
+||z||_Path <= 2*exp(n*T)*||B_a||_X.
+```
+
+`solution_zero` proves the zero-data solution is the zero path. Bounds may
+deteriorate as eta_m tends to zero or b approaches 1. They are existence
+bounds, distinct from the completed diffusivity-independent classical
+ideal/resistive comparison constant. They are not numerical predictions.
+
+### Entire-class uniqueness and compatible restrictions
+
+`LinearMild.unique_of_small` applies the inherited **mild** uniqueness theorem
+to two arbitrary continuous paths, taking its radius to be the maximum of
+their norms and using the global linear source estimate. After weighting,
+theta<1 forces their difference to vanish. `PeriodicMild.mild_unique`
+retains only the common mild equations; it assumes no ball bound, auxiliary
+weight, classical PDE, time derivative or C2 regularity.
+`recovered_unique` explicitly identifies solutions recovered using different
+weights. Thus the construction choice is immaterial.
+
+`LinearMild.restrict` proves that restrictions satisfy the original integral
+equation: the two clamps agree on every integration interval.
+`PeriodicMild.solution_restrict` identifies the constructed restriction by
+uniqueness. `actualSourcePath_restrict` proves that actual coefficients built
+on different slabs restrict to the same operator path, using their physical
+value and derivative identities. `actual_restrict` and `actual_overlap`
+therefore prove C1-valued agreement wherever both slabs are defined, for
+the same scales, a, eta_m and B_a. The weights need not agree. Entire-slab
+weighting replaces short-time subdivision and continuation at this mild
+level; no second continuation construction is needed.
+
+### Exact remaining regularity obligations
+
+The exported witness is a continuous C1-valued mild path with jointly
+continuous value and first spatial derivative. No interior time derivative,
+C2 or higher induction regularity, joint C-infinity statement, or classical
+pointwise resistive PDE is established for it. Positive-time regularity of
+the homogeneous heat evolution cannot be transferred to the Duhamel term
+without controlling its integration endpoint r=0.
+
+The next analytic step must prove the additional regularity for this same
+path and a justified mild-to-PDE bridge. If stronger-space constructions
+are used, their agreement with this path must follow from mild uniqueness.
+Forward-endpoint divergence preservation then needs the hypotheses matched
+to that regularity; no backward parabolic extension may be assumed. No
+preterminal field is glued in this run. Compatibility supplies a future
+gluing input, not an exported classical field on `[a,1)`.
+
+The classical comparison theorem cannot yet be applied to this witness,
+and the closed finite-gain theorem remains open. This milestone neither
+assumes nor proves axial invariance for resistive fields, a length-scale
+power law, eigen-curvature closure, survival of ideal blow-up at fixed
+diffusivity, a terminal maximum, energy blow-up, stability, attraction,
+backreaction or coupled MHD. The earlier conditional curvature-mode
+results remain separate.
+
+### Mild-checkpoint validation and files
+
+The new modules are `ResistivePeriodicSource`, `ResistiveWeightedVolterra`,
+`ResistiveLinearMild`, `ResistivePeriodicMild`, and `ResistivePeriodicMildActual`
+under `NavierStokes/`. Each builds incrementally; the final actual target
+passes 9,396 jobs. Full `lake build` passes 11,317 jobs. The new modules
+emit no warnings; the inherited challenge admissions and heat-module
+unused-section-variable warnings are unchanged.
+
+`scripts/audit_resistive_mild.lean` checks every one of the 95 new named
+declarations and 21 explicit construction/analytic dependencies. All 116
+checks pass. All eight prior audit scripts also pass their 571 checks,
+giving 687 checks using only `propext`, `Classical.choice`, and `Quot.sound`,
+or no axioms. No audited dependency uses `sorryAx`; no new admission, axiom
+or placeholder declaration is introduced. The previous Lean files are
+unchanged. `git diff --check` passes.
+
+## Historical physical periodic heat interface (after 9618457)
 
 This checkpoint concerns the heat operators needed for a later induction
 construction. It preserves every pre-existing Lean file, including the
@@ -166,7 +408,7 @@ continuity through zero, positive-time C1 target-norm continuity, spatial C2
 slices, and uniform-space time differentiability at positive times. Joint
 C-infinity regularity is not asserted.
 
-### Next existence handoff: inspected Volterra hypotheses
+### Historical existence handoff: inspected Volterra hypotheses
 
 The pinned `EulerVolterraConvolution.exists_mild_solution` accepts real Banach
 X, a real normed Y, elapsed slab length T>=0, K:Real->Y->L[Real]X, and k, with:
@@ -381,13 +623,13 @@ endpoint conventions and regularity stated above. They assert uniqueness
 in this class, without constructing a member of it.
 
 The comparison and uniqueness checkpoint has no remaining analytic gap.
-**Resistive existence is still outstanding:** a correct physical-periodic
-heat generator and smoothing estimates, derivative-loss source estimates,
-short-time construction, continuation, compatible spatial regularity and
-slab gluing, and forward-endpoint divergence preservation for the eventual
-constructed field still need to be instantiated. No solution B_eta on
-`[a,1)` is constructed here. The earlier conditional finite-gain theorem is
-unchanged; this run does not package a closed finite-gain result.
+**Classical resistive existence is still outstanding.** The later heat and
+mild checkpoints above discharge the physical heat interface, source estimates,
+entire finite-slab mild construction and mild uniqueness. Higher induction
+regularity, the pointwise PDE bridge, forward divergence preservation and
+preterminal gluing remain. No classical solution B_eta on `[a,1)` is
+constructed here. The earlier conditional finite-gain theorem is unchanged;
+there is still no closed finite-gain result.
 
 Nothing in this checkpoint determines fixed-positive-diffusivity terminal
 behavior, a sharp gain law, a magnetic length scale, an eigen-curvature
