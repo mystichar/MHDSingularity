@@ -1,5 +1,63 @@
 # MHDSingularity handoff: Paper II resistive foundation
 
+## Current finite-gain extension: checkpoints remain incomplete
+
+Starting state was the clean local `3a9b968`, matching origin/main. No reset
+was performed. No AGENTS.md was present in the repository or its ancestor
+paths checked. All existing Paper I and Paper II Lean files are unchanged.
+
+Sound completed work:
+
+- `ResistivePeriodicGaussian.lean`: actual three-dimensional periodic
+  bounded-continuous Banach subspace, containing all constant vectors;
+  constructed Gaussian averaging, directional variance continuity,
+  contractive bounded linear three-coordinate operator, periodicity,
+  initial and constant-seed preservation, physical variance `2*eta_m*(t-a)`.
+  No heat-generator or derivative-gain theorem yet.
+- `ResistivePeriodicCoefficient.lean`: uniform |u| and |Du| bounds from the
+  SAME selected periodic velocity on each fixed [a,b], b<1, independent
+  of eta_m; pointwise source difference and smoothness lemmas. The magnetic
+  Laplacian bound remains conditional on its genuine joint continuity.
+- `ResistiveIdealComparison.lean`: exact source and difference equation,
+  initial difference, Young/operator bounds, exact scalar barrier ODE,
+  nonnegative comparison constant and square-root step, including D=0.
+- `ResistiveSquaredNorm.lean`: exact squared-norm Laplacian, forced scalar
+  identity and inequality derived from the resistive/ideal PDEs. The
+  parabolic maximum principle remains unproved.
+- `ResistiveFiniteGain.lean`: exact observation time/gain, positive
+  zero-safe diffusivity threshold, triangle-inequality gain transfer for
+  arbitrary vectors, and the correct fixed-family quantifier order
+  CONDITIONAL on a supplied fixed-slab pointwise comparison estimate.
+
+**There is no actual resistive solution on [a,1) and no closed finite-gain
+PDE theorem yet.** In particular, no eigen-curvature or magnetic-scale
+hypothesis has been used to replace these gaps. Full statements and the
+six precise analytic obligations are in the new first section of
+[Paper/ResistiveMagneticInduction.md](Paper/ResistiveMagneticInduction.md).
+
+The inherited Sobolev heat API is on R3 x S1, with four derivative directions
+and a noncompact L2 measure. It was not identified with T3. The new uniform
+periodic space avoids the constant-seed L2 obstruction, but completing its
+Ck derivative scale, proving the physical generator/smoothing estimate,
+Volterra source estimates, continuation, regularity, uniqueness, divergence
+preservation and gluing remain checkpoint A work. Checkpoint B additionally
+needs the ideal witness's uniform Laplacian bound and an endpoint-compatible
+periodic maximum principle. Checkpoint C then needs actual instantiation.
+
+
+### Validation of this partial checkpoint
+
+- All five new Lean modules passed targeted builds.
+- Full `lake build` passed: 11,295 jobs.
+- `scripts/audit_resistive_comparison.lean` passed 66 audits: all 52 new
+  theorems, all 13 named definitions, and the periodic completeness instance.
+- The existing Paper II audit passed all 77 theorem audits; the four Paper I
+  audit scripts passed all 151 theorem audits.
+- Every audited dependency is among `propext`, `Classical.choice`, and
+  `Quot.sound`. No new `sorry`, `admit`, or axiom declaration is present.
+- The four inherited ComparatorChallenges sorry warnings are unchanged.
+  No previously existing Lean file was modified. `git diff --check` passed.
+
 ## Current Paper II extension from d7d2adb
 
 Paper I is frozen; none of its Lean files is changed. Read

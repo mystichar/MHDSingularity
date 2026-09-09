@@ -5,6 +5,33 @@ from the inherited OpenAI Navier–Stokes formalization. The magnetic field is
 passive: no Lorentz-force backreaction or coupled MHD solution is asserted.
 The inherited results and their attribution are retained below.
 
+## Fixed-slab resistive amplification: construction still open
+
+The extension after `3a9b968` adds a physical periodic bounded-continuous
+Banach space containing the constant seed and contractive Gaussian
+averaging operators. It proves actual selected-velocity coefficient bounds,
+the exact ideal/resistive difference equation, the squared-norm differential
+inequality, and exact finite-gain observation/threshold algebra.
+
+**Actual resistive existence and the closed finite-gain theorem remain
+unproved.** The uniform O(eta_m) comparison is not yet established: its
+scalar barrier is still a premise of the square-root lemma. The finite-gain
+family theorem explicitly assumes the pointwise comparison estimate.
+
+The inherited Sobolev heat space is R3 x S1, not the physical three-torus.
+The new operators still need their generator and derivative-gain proofs,
+a completed periodic derivative scale, and a Volterra construction with
+continuation and regularity. The actual ideal Laplacian's joint continuity
+and an endpoint-compatible parabolic maximum principle are also outstanding.
+No resistive axial invariance, eigenprofile or length-scale power law is used.
+All prior Lean proofs remain unchanged. See the current checkpoint inventory
+in [the Paper II outline](Paper/ResistiveMagneticInduction.md).
+
+Targeted and full builds pass (11,295 jobs). The new audit checks 52
+theorems and 14 construction declarations; all 228 prior magnetic audits
+also pass with only standard axioms. Four inherited challenge warnings
+remain unchanged.
+
 ## Paper II: resistive identities and conditional cutoff
 
 Paper I's Lean results are preserved unchanged. The new `Resistive*.lean`

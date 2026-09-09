@@ -1,0 +1,73 @@
+import NavierStokes.ResistiveIdealComparison
+import NavierStokes.ResistiveSquaredNorm
+import NavierStokes.ResistivePeriodicCoefficient
+import NavierStokes.ResistivePeriodicGaussian
+import NavierStokes.ResistiveFiniteGain
+
+-- Every new theorem and named construction definition; dependencies are transitive.
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.source
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.source_norm_le
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.source_sub
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.difference_equation
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.difference_initial
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.squared_residual_bound
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.constant
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.constant_nonneg
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.barrier_nonneg
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.norm_le_of_squared_barrier
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.barrier_hasDerivAt
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.barrier_initial
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.norm_sq_directional
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.norm_sq_second_directional
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.norm_sq_time
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.norm_sq_advection
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.norm_sq_laplacian
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.squared_equation
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.squared_inequality
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.ideal_resistive_squared_inequality
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.actual_velocity_bounds
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.source_difference_bound
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.source_smooth
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.laplacian_bound_of_joint_continuity
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.orbit
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.orbit_apply
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.orbit_continuous
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.orbit_norm_le
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.orbit_integrable
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.lineAverage
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.lineAverage_apply
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.lineAverage_norm_le
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.lineAverage_periodic
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.lineAverage_zero
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.lineAverage_const
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.spatialAverage
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.spatialAverage_norm_le
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.spatialAverage_periodic
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.spatialAverage_zero
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.spatialAverage_const
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.physicalAverage
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.physical_variance
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.physicalAverage_initial
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.physicalAverage_axial_seed
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.periodicFields
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.constantField
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.average
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.average_norm_le
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.average_constant
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.lineAverage_standard
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.lineAverage_continuous
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.lineAverage_add
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.lineAverage_smul
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.lineOperator
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.spatialOperator
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.spatialOperator_apply
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.spatialOperator_norm_le
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.observationTime
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.observationTime_bounds
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.observationTime_gain
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.diffusivityThreshold
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.diffusivityThreshold_pos
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.finite_gain_of_error
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.family_finite_gain
+#print axioms NavierStokes.ResistiveMagnetic.Comparison.error_tendsto_zero
+#print axioms NavierStokes.ResistiveMagnetic.PeriodicGaussian.periodicFieldCompleteSpace

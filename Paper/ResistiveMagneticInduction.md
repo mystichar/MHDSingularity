@@ -1,5 +1,221 @@
 # Paper II: passive resistive induction — first formal milestone
 
+## Fixed-slab finite-gain milestone: partial progress after 3a9b968
+
+**The requested closed resistive-existence and finite-gain theorem is not
+complete.** No actual resistive solution has been constructed, either on a
+whole finite slab or on `[a,1)`. The results below are checked construction
+primitives and conditional comparison algebra. None of the missing analytic
+steps is a structure field presented as an existence theorem.
+
+### A. Physical periodic representation and Gaussian averaging
+
+`ResistiveMagnetic.PeriodicGaussian` in
+`NavierStokes/ResistivePeriodicGaussian.lean` uses
+`Field = Space →ᵇ Space`, the Banach space of bounded continuous functions
+on the actual three-dimensional cover. `periodicFields` is its **closed
+linear subspace** satisfying `f(x+e_i)=f(x)` for the three physical
+coordinate vectors; `PeriodicField` has a complete uniform norm.
+`constantField c` belongs for every vector c. No zero-mean constraint,
+whole-cover L2 norm, or periodic vector potential is required.
+
+`lineAverage` is a Bochner integral of translated fields against
+`gaussianReal 0 variance`. `orbit_continuous` proves continuity in the
+uniform norm by compact-cell periodicity, rather than assuming all bounded
+continuous functions are uniformly continuous. `orbit_integrable` justifies
+the Banach-valued integral. `lineAverage_norm_le`, `lineAverage_periodic`,
+`lineAverage_zero`, `lineAverage_const`, and `lineAverage_continuous` prove
+contraction, periods, initial value, preservation of constants, and strong
+continuity of each directional average in variance. `lineAverage_add` and
+`lineAverage_smul` prove linearity. `spatialOperator` is the composition of
+exactly three physical coordinate averages as a bounded linear operator on
+`PeriodicField`; `spatialOperator_norm_le` bounds its operator norm by one.
+`average_constant` retains the constant seed.
+
+`physicalAverage` uses variance `2*eta_m*(t-a)`, with
+`physical_variance` proving that the conversion to nonnegative variance
+agrees with this expression when eta_m>=0 and t>=a.
+`physicalAverage_initial` and `physicalAverage_axial_seed` prove the initial
+and constant-seed identities. **The variance-generator identity and
+one-derivative smoothing bound for these new physical operators are still
+unproved.** The variance factor alone is not claimed to prove the generator.
+Nor is a semigroup or mild-solution theorem for these operators exported.
+
+The geometry audit found that the inherited
+`EulerLiftedGradientSpace.LiftDomain period` is `Vector3 × AddCircle period`,
+with product Lebesgue/angle measure (`Euler/EulerProof.lean:1085`).
+`EulerCylinderSobolevSpace.SobolevWord` uses `Fin 4`, and its underlying
+field is L2 on that noncompact cylinder. This is not the physical three-torus.
+`EulerSobolevHeat.exists_viscous_mild_solution`, `heatKernel`, and
+`EulerMildEquationBridge.viscous_mild_hasDerivAt` were inspected with their
+actual types. Their `2*nu*time` variance and cylinder Laplacian do not justify
+instantiating them with this physical constant seed. The abstract
+`EulerVolterraConvolution.exists_mild_solution` remains reusable once the
+physical derivative-gaining kernel and function-space scale are available.
+
+### B. Comparison algebra and actual velocity bounds
+
+Names in this and the next subsection have prefix
+`NavierStokes.ResistiveMagnetic.Comparison`.
+
+`source` is exactly `-DB[u]+Du[B]`, without a solenoidal projection.
+`source_norm_le`, `source_sub`, `source_difference_bound`, and
+`source_smooth` prove its local bound, linear difference identity, C1-to-C0
+pointwise difference estimate, and local smoothness under supplied smooth
+inputs. If the field and first-derivative differences are both bounded by
+`delta`, and `||u||<=U`, `||Du||<=L`, the source difference is bounded by
+`(U+L)*delta`. This is not yet a product/Lipschitz theorem on a completed
+periodic Ck or Sobolev scale.
+
+`actual_velocity_bounds scales hsel hb` uses the SAME actual selected
+periodic velocity and the existing `actualOnSlab` coefficient path. For any
+b<1 it proves finite real U,L>=0 such that, for all t in [a,b] and all x,
+`||u(t,x)||<=U` and `||Du(t,x)||<=L`. Its constants depend on the slab and
+schedule and contain no diffusivity parameter. No terminal uniform bound
+is asserted.
+
+`difference_equation` subtracts the supplied resistive and ideal PDEs to
+prove, for W=B-I,
+
+```
+partial_t W + DW[u] = Du[W] + eta_m Delta W + eta_m Delta I.
+```
+
+It requires smooth spatial slices and differentiable time slices at the
+evaluated point. `difference_initial` derives W(a)=0 from identical data.
+`norm_sq_directional`, `norm_sq_second_directional`, `norm_sq_time`,
+`norm_sq_advection`, and `norm_sq_laplacian` compute the derivatives of
+`q=||W||²`. In particular, the scalar Laplacian is exactly
+`2 sum_i ||partial_i W||² + 2 inner(W,Delta W)`.
+
+`squared_equation` proves the full forced vector identity
+
+```
+(partial_t + u.grad - eta_m Delta) q
+  = 2 inner(W,Du[W]) - 2 eta_m sum_i ||partial_i W||²
+    + 2 eta_m inner(W,f).
+```
+
+Here f is the supplied forcing in the difference equation.
+`squared_residual_bound` applies operator-norm bounds and Young's inequality.
+`squared_inequality` gives the resulting scalar differential inequality.
+`ideal_resistive_squared_inequality` DERIVES it directly from the two PDEs,
+with `f=Delta I`, for jointly smooth B,I on an open time domain:
+
+```
+(partial_t + u.grad - eta_m Delta) q <= (2L+1) q + eta_m² D².
+```
+
+No norm derivative at zero or independent component comparison is used.
+These local statements do not require a backward parabolic extension, but
+they do not yet prove the endpoint-compatible maximum principle.
+
+`barrier_hasDerivAt` and `barrier_initial` verify that
+`R(t)=(exp((2L+1)*(t-a))-1)/(2L+1)` solves `R'=(2L+1)R+1`, R(a)=0.
+`constant L D a b = D*sqrt(R(b))` is finite as a real expression and
+`constant_nonneg` proves it is nonnegative for D>=0.
+`constant_zero` covers D=0. `norm_le_of_squared_barrier` proves
+`||W||<=eta_m*constant L D a b` from the EXPLICIT scalar barrier premise
+`||W||²<=eta_m² D² R(b)`, for eta_m,L,D>=0 and a<=b.
+**The barrier premise has not been established for the actual fields.**
+
+`laplacian_bound_of_joint_continuity` proves a uniform D on a compact slab
+from joint continuity and periodicity of the actual spatial Laplacian.
+Its continuity premise is not inferred from separate spatial smoothness.
+It is not yet instantiated for Paper I's constructed periodic ideal field.
+
+### C. Exact finite-gain transfer, still conditional
+
+`observationTime a K G = 1-(1-a)*(2G)^(-1/K)`.
+For a<1, K>0, G>1, `observationTime_bounds` proves a<t_G<1 and
+`observationTime_gain` proves `((1-a)/(1-t_G))^K=2G`, with all rpow
+positivity and denominator conditions discharged.
+
+`diffusivityThreshold G Bz0 C = G*abs(Bz0)/(1+C)` is positive for
+G>0, Bz0!=0, C>=0. `finite_gain_of_error` proves the following implication
+for ARBITRARY vectors v and ideal:
+
+```
+||ideal|| = 2G*abs(Bz0),   ||v-ideal|| <= eta_m*C,
+0 < eta_m < G*abs(Bz0)/(1+C)
+  => G*abs(Bz0) <= ||v||.
+```
+
+The proof uses only the triangle inequality and the stated threshold; it
+assumes neither an axial resistive field nor an eigen-curvature closure.
+`error_tendsto_zero` gives the limit as eta_m tends to zero from above from
+any supplied nonnegative error bounded by eta_m*C.
+
+`family_finite_gain` fixes a, K, nonzero Bz0, gamma, one ideal field and
+one FAMILY of fields before G. Assuming the ideal path norm formula and
+that family's fixed-slab uniform comparison bound, it proves:
+
+```
+forall G>1, exists t_G in (a,1), exists eta_G>0,
+  forall eta_m in (0,eta_G),
+    G*abs(Bz0) <= ||family eta_m (t_G,gamma t_G)||.
+```
+
+The family is not reselected per target. However, its existence as a family
+of resistive PDE solutions and its comparison estimate are not proved here.
+This theorem is deliberately **not** named or advertised as the closed
+Navier-Stokes/resistive amplification theorem. No new schedule/profile
+witness or upstream compatibility assumption is introduced.
+
+### Exact remaining analytic obligations
+
+1. Complete a physical periodic derivative scale containing the constants
+   (for example closed uniform Ck derivative graphs over `PeriodicField`).
+   Prove the new Gaussian operators' semigroup law, strong continuity on
+   that scale, generator `(1/2) Delta` in variance, and a Ck-to-C(k+1) bound
+   of the form `C*(1+(eta_m*tau)^(-1/2))` for eta_m,tau>0. Consequently prove
+   the physical generator `eta_m Delta`; the arithmetic variance theorem
+   is not a substitute.
+2. Prove the source product, continuity and Lipschitz estimates in that
+   scale for the actual coefficient paths. Instantiate abstract Volterra,
+   prove uniqueness and bounds sufficient for finite-slab continuation,
+   and prove compatibility across regularity orders and overlapping slabs.
+3. Obtain one classical field per eta_m on [a,1), with continuity at a,
+   interior derivatives and continuous initial divergence. Prove divergence
+   preservation with forward endpoint hypotheses, avoiding any assumed
+   backward-time PDE extension. No such field currently exists in Lean.
+4. For the SAME ideal constructed witness, prove joint continuity of
+   `(t,x) -> spatialLaplacian Bideal t x` through the initial endpoint.
+   The existing smooth label-to-path family supplies forward jets;
+   `Euler/InverseMapJetContinuity.lean` offers a reusable inverse-jet route
+   from `DY=A o Y` and continuous coefficient jets. The periodic Eulerian
+   composition still needs to be instantiated (third forward spatial
+   derivatives and second inverse spatial derivatives suffice here).
+   Then `laplacian_bound_of_joint_continuity` supplies the diffusivity-free D.
+5. Prove the scalar periodic parabolic maximum/comparison principle for
+   continuous initial data, interior time derivative and spatial C2
+   regularity. Apply it to the proved squared inequality to obtain the
+   barrier and the uniform O(eta_m) error. No such maximum principle or
+   actual pointwise comparison theorem is exported in this extension.
+6. Instantiate `family_finite_gain` with those constructions and with the
+   existing closed compatible NS/ideal witnesses. The closed quantifier
+   theorem remains open until steps 1–5 are supplied.
+
+Nothing here determines fixed-positive-diffusivity terminal behavior, a
+sharp gain law, a magnetic scale exponent, a useful numerical conductivity
+threshold, energy blow-up, stability, attraction, or backreaction. The
+existing conditional curvature-mode theorems remain separate and unchanged.
+
+### Validation of this partial checkpoint
+
+- All five new Lean modules passed targeted builds.
+- Full `lake build` passed: 11,295 jobs.
+- `scripts/audit_resistive_comparison.lean` passed 66 audits: all 52 new
+  theorems, all 13 named definitions, and the periodic completeness instance.
+- The existing Paper II audit passed all 77 theorem audits; the four Paper I
+  audit scripts passed all 151 theorem audits.
+- Every audited dependency is among `propext`, `Classical.choice`, and
+  `Quot.sound`. No new `sorry`, `admit`, or axiom declaration is present.
+- The four inherited ComparatorChallenges sorry warnings are unchanged.
+  No previously existing Lean file was modified. `git diff --check` passed.
+
+## Previously completed foundation (3a9b968)
+
 Paper I's theorem scope and Lean files are unchanged. This extension proves
 identities, divergence preservation in specified classical energy classes,
 an exact coordinate transformation, and a conditional damped-mode cutoff.
