@@ -1,4 +1,113 @@
-# MHDSingularity handoff: closed whole-space compact-seed ideal induction
+# MHDSingularity handoff: quantitative compact magnetic regions
+
+## Current extension from 3c5badb
+
+All existing periodic and whole-space Lean results are unchanged. The new
+construction bridge uses the actual `Data.magnetic W` witness throughout.
+Read [Paper/MagneticRegions.md](Paper/MagneticRegions.md) for the exact
+formulas, proof outline, and deformation-estimate audit.
+
+### Amplitude and initial total energy
+
+- `MagneticCompactSeed.potential_homogeneous`, `seed_homogeneous`.
+- `MagneticCompactSolution.Data.magnetic_smul`, `energy_smul`,
+  `initial_energy_scaling`, `initial_unit_energy_pos`, `small_initial_energy`.
+- `MagneticCompactMain.constructed_sup_divergence`,
+  `small_initial_energy_sup_divergence`, `small_initial_energy_main`.
+
+Initial energy scales exactly as `ofReal(c^2) * E_unit(a)`, with E_unit(a)
+strictly positive and finite. The closed main theorem fixes compatible
+selected-schedule NS data and a late reference time before choosing epsilon
+or amplitude. Every positive real epsilon admits c>0 and the actual constructed
+field with `0<E(a)<ofReal epsilon` and global spatial supremum divergence.
+
+### Deliverable A: derivative-bound theorem
+
+`MagneticAmplificationRegion.radius_bounds` and `high_field_ball` prove the
+quantitative mean-value neighborhood for r0>0, M>0, H>=0, a differentiable Q
+on the closed r0-ball, central norm M, and derivative norm <=H there.
+The radius is `r0*M/(2*(M+r0*H))`; it is positive, <=r0/2, and H*r<=M/2.
+The theorem includes H=0.
+
+`MagneticEnergyLowerBounds.energy_of_region` proves
+`ofReal(M^2/8)*volume(U) <= energy B t` from a measurable U and the high-field
+inequality. `c3_pos`, `unit_ball_volume`, `unit_ball_finite_positive`, and
+`ball_volume` establish the dimensional constant and ball measure.
+
+`MagneticCompactFlow.Slab.Phi_measurePreserving`, `region_open`,
+`region_volume`, and `quantitative_region` prove the physical image-volume
+and energy conclusions using the actual invertible flow.
+
+### Deliverable B: constructed witness and finite bounds
+
+`MagneticCompactFlow.Slab.qPath_smooth`, `extendedDQ_continuous`,
+`extendedDQ_eq`, and `exists_uniform_DQ_bound` use smooth maps into continuous
+path spaces to prove uniform derivative bounds through slab endpoints.
+`Q_fderiv_apply` proves `DQ[v]=(DF[v])W+F(DW[v])`; `Q_fderiv_plateau`
+removes the second term on the constant-seed plateau.
+
+`MagneticCompactSolution.Data.Phi_eq_slab`, `Q_eq_slab`, `magnetic_Phi_Q`,
+`Phi_eq_trajectory` bridge the actual glued flow, Jacobian, field and trajectory.
+`exists_uniform_DQ_bound`, `derivativeBound_spec`, `derivativeBound_uniform`
+prove finite H(t), and a uniform bound on every fixed [a,b], b<1.
+`quantitative_region` transfers the slab theorem to that single field.
+
+`MagneticCompactMain.constructed_label_amplification` proves the exact norm
+M(t) at the distinguished label. `constructed_quantitative_region` exports
+open positive-volume regions U_t, exact volume `ofReal(c3*r(t)^3)`, the
+M(t)/2 pointwise lower bound, and
+`ofReal((c3/8)*M(t)^2*r(t)^3) <= energy B t`.
+It takes the existing actual selected/NS data, `0<=a<1`, `lateStart<a`,
+Bz0!=0, r0>0, and a<=t<1. It assumes neither a magnetic representation for an
+arbitrary existential witness nor a bound on H: these are constructed.
+
+### Deliverable C: conditional criterion, actual rate still open
+
+`MagneticEnergyLowerBounds.radius_lower`, `power_lower`,
+`eventual_power_lower`, `energy_exponent_negative`, and
+`conditional_energy_divergence` prove the criterion. For fixed C>0, p>=0,
+assuming an eventual `H(t)<=C*(1-t)^(-p)`, the eventual lower bound is
+`ofReal(c*(1-t)^(-2*K+3*max(p-K,0)))`, c>0. The exponent is negative
+when p<5*K/3. ENNReal energy then tends to `nhds top`.
+`MagneticCompactMain.constructed_eventual_energy_lower` exports the actual
+field’s eventual power lower bound. `constructed_conditional_energy_divergence` specializes
+this to the actual derivative supremum and actual field, with only that
+late power bound left as an additional analytic assumption.
+
+The flow APIs establish fixed-slab finiteness. The slow-base Eulerian jet
+rates (`ActualBaseVelocityBounds.velocity_rate`, losses 18 and 40 for orders
+1 and 2 in physicalQ) are not label-deformation bounds for the full assembled
+velocity. Diagonal tail jet estimates require their own stage hypotheses.
+Gevrey derivative bounds
+require all velocity-jet bounds and a small B*R*T; there is no instantiated
+terminal estimate for the actual material tube. An adequate upper bound on
+D_xi(F W), or D_xi^2 Phi acting on the seed on the plateau, is still missing.
+No full natural-core gradient or Hessian transfer is assumed. No magnetic
+variation scale is inferred from the Eulerian core radius. Failure of this
+sufficient estimate does not imply bounded terminal energy.
+
+Positive-volume high fields at each time and their explicit time-dependent
+volume bounds are proved. An indefinitely amplifying fixed material set,
+perturbation stability, and attraction are not. No resistive, backreaction,
+coupled-MHD, fusion, or novelty claims are added.
+
+### Validation
+
+- Targeted `lake build NavierStokes.MagneticSeedScaling` passed, including all
+  seven new modules.
+- Full `lake build` passed: 11,277 jobs. The only sorry warnings are the four
+  inherited declarations in `ComparatorChallenges/Euler.lean` and
+  `ComparatorChallenges/NavierStokes.lean`; no new module has such a warning.
+- All 47 new theorems in `scripts/audit_magnetic_regions.lean` passed axiom
+  audits, with only `propext`, `Classical.choice`, and `Quot.sound`.
+- Re-ran all 104 prior magnetic audits: compact 66, periodic main 9,
+  periodic construction 29; the same three standard axioms only.
+- No sorry, admit, new axioms, or placeholder declarations were added.
+  Existing periodic and whole-space Lean files are unchanged.
+
+---
+
+## Previous milestone: closed whole-space compact-seed ideal induction
 
 ## Current milestone after 4e276b5
 
@@ -148,10 +257,11 @@ assumptions, all discharged in the closed theorem. No magnetic PDE solution
 or suitable flow wrapper is assumed. Joint C-infinity regularity is not
 claimed; all spatial orders and interior joint C1 regularity are proved.
 
-There is no magnetic-energy blow-up, arbitrary-direction amplification,
-finite-volume lower bound, resistive amplification, Lorentz backreaction,
-or coupled-MHD theorem. Finite-slab energy upper bounds imply no energy-growth
-lower bound. The velocity remains prescribed and forced, with viscosity one
+At this earlier construction checkpoint there was no finite-volume lower
+bound; the current extension above supplies one. Actual terminal energy
+blow-up, arbitrary-direction amplification, resistive amplification, Lorentz
+backreaction, and coupled MHD remain unproved. Finite-slab energy upper bounds
+alone imply no energy-growth lower bound. The velocity remains prescribed and forced, with viscosity one
 and physical singular time one. No novelty or publication claim is made.
 
 ### Validation

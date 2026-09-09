@@ -141,10 +141,11 @@ regularity is not claimed. The transported field need not remain axial away
 from the distinguished trajectory.
 
 This is passive ideal induction in a prescribed forced NS velocity. There is
-no magnetic-energy blow-up theorem, arbitrary-direction amplification,
-finite-volume lower bound, resistive amplification, Lorentz backreaction,
-or coupled MHD result. The finite-energy upper bounds do not imply any
-energy-growth lower bound.
+no actual terminal magnetic-energy blow-up theorem, arbitrary-direction
+amplification, resistive amplification, Lorentz backreaction, or coupled MHD
+result. The finite-energy upper bounds alone do not imply an energy-growth
+lower bound. The subsequent extension below proves quantitative fixed-time
+region and energy lower bounds.
 
 ## Reproduction
 
@@ -157,3 +158,14 @@ lake env lean scripts/audit_magnetic_periodic.lean
 ```
 
 Recorded validation results are in `MHD_PROGRESS.md`.
+
+
+## Subsequent quantitative-region extension
+
+The original existence and amplification proofs above are preserved. See
+[MagneticRegions.md](MagneticRegions.md) for amplitude homogeneity, arbitrarily
+small positive initial total energy with supremum divergence, the actual
+material-flow bridge, positive-volume high-field regions, and quantitative
+energy lower bounds. The terminal energy-divergence criterion there is
+conditional on an unproved late bound for the actual label derivative;
+actual magnetic-energy blow-up is not asserted.

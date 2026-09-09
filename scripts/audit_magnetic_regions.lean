@@ -1,0 +1,51 @@
+import NavierStokes.MagneticSeedScaling
+
+-- All theorems introduced by the compact high-field-region milestone.
+#print axioms NavierStokes.MagneticAmplificationRegion.radius_bounds
+#print axioms NavierStokes.MagneticAmplificationRegion.high_field_ball
+#print axioms NavierStokes.MagneticCompactFlow.Slab.magnetic_Phi_Q
+#print axioms NavierStokes.MagneticCompactFlow.Slab.qPath_smooth
+#print axioms NavierStokes.MagneticCompactFlow.Slab.qPath_apply
+#print axioms NavierStokes.MagneticCompactFlow.Slab.Q_smooth
+#print axioms NavierStokes.MagneticCompactFlow.Slab.extendedDQ_continuous
+#print axioms NavierStokes.MagneticCompactFlow.Slab.extendedDQ_eq
+#print axioms NavierStokes.MagneticCompactFlow.Slab.exists_uniform_DQ_bound
+#print axioms NavierStokes.MagneticCompactFlow.Slab.Q_fderiv_apply
+#print axioms NavierStokes.MagneticCompactFlow.Slab.Q_fderiv_plateau
+#print axioms NavierStokes.MagneticEnergyLowerBounds.c3_pos
+#print axioms NavierStokes.MagneticEnergyLowerBounds.unit_ball_volume
+#print axioms NavierStokes.MagneticEnergyLowerBounds.unit_ball_finite_positive
+#print axioms NavierStokes.MagneticEnergyLowerBounds.ball_volume
+#print axioms NavierStokes.MagneticEnergyLowerBounds.energy_of_region
+#print axioms NavierStokes.MagneticCompactFlow.Slab.Phi_measurePreserving
+#print axioms NavierStokes.MagneticCompactFlow.Slab.region_open
+#print axioms NavierStokes.MagneticCompactFlow.Slab.region_volume
+#print axioms NavierStokes.MagneticCompactFlow.Slab.quantitative_region
+#print axioms NavierStokes.MagneticCompactSolution.Data.Phi_eq_slab
+#print axioms NavierStokes.MagneticCompactSolution.Data.Q_eq_slab
+#print axioms NavierStokes.MagneticCompactSolution.Data.magnetic_Phi_Q
+#print axioms NavierStokes.MagneticCompactSolution.Data.exists_uniform_DQ_bound
+#print axioms NavierStokes.MagneticCompactSolution.Data.derivativeBound_spec
+#print axioms NavierStokes.MagneticCompactSolution.Data.derivativeBound_uniform
+#print axioms NavierStokes.MagneticCompactSolution.Data.quantitative_region
+#print axioms NavierStokes.MagneticCompactSolution.Data.Phi_eq_trajectory
+#print axioms NavierStokes.MagneticEnergyLowerBounds.radius_lower
+#print axioms NavierStokes.MagneticEnergyLowerBounds.energy_exponent_negative
+#print axioms NavierStokes.MagneticEnergyLowerBounds.power_lower
+#print axioms NavierStokes.MagneticEnergyLowerBounds.eventual_power_lower
+#print axioms NavierStokes.MagneticEnergyLowerBounds.conditional_energy_divergence
+#print axioms NavierStokes.MagneticCompactMain.constructed_label_amplification
+#print axioms NavierStokes.MagneticCompactMain.constructed_quantitative_region
+#print axioms NavierStokes.MagneticCompactMain.constructed_conditional_energy_divergence
+#print axioms NavierStokes.MagneticCompactSeed.potential_homogeneous
+#print axioms NavierStokes.MagneticCompactSeed.seed_homogeneous
+#print axioms NavierStokes.MagneticCompactSolution.Data.magnetic_smul
+#print axioms NavierStokes.MagneticCompactSolution.Data.energy_smul
+#print axioms NavierStokes.MagneticCompactSolution.Data.initial_energy_scaling
+#print axioms NavierStokes.MagneticCompactSolution.Data.initial_unit_energy_pos
+#print axioms NavierStokes.MagneticCompactSolution.Data.small_initial_energy
+#print axioms NavierStokes.MagneticCompactMain.constructed_sup_divergence
+#print axioms NavierStokes.MagneticCompactMain.small_initial_energy_sup_divergence
+#print axioms NavierStokes.MagneticCompactMain.small_initial_energy_main
+
+#print axioms NavierStokes.MagneticCompactMain.constructed_eventual_energy_lower

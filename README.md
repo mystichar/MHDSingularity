@@ -5,6 +5,45 @@ from the inherited OpenAI Navier–Stokes formalization. The magnetic field is
 passive: no Lorentz-force backreaction or coupled MHD solution is asserted.
 The inherited results and their attribution are retained below.
 
+## Compact-seed high-field regions and small initial energy
+
+The extension after `3c5badb` preserves the completed periodic and whole-space
+proofs. `MagneticSeedScaling.lean` proves seed/transport homogeneity and exact
+quadratic initial-energy scaling. `MagneticCompactMain.small_initial_energy_main`
+chooses one prescribed actual compact NS velocity and late reference time,
+then gives, for every epsilon > 0, a constructed field with
+`0 < E(a) < ofReal epsilon` and global spatial supremum diverging at t=1.
+
+`MagneticMaterialRegion.lean` exposes the actual fixed-start flow and Jacobian
+of `Data.magnetic W`, using overlap compatibility. For the distinguished
+label, `constructed_label_amplification` identifies the flow with gamma and
+proves `||Q(t,gamma(a))|| = M(t) = |Bz0|*((1-a)/(1-t))^K`.
+
+For any fixed r0 > 0, the actual label derivative supremum H(t) is finite and
+uniformly bounded on each fixed compact preterminal slab. With
+`r(t)=r0*M(t)/(2*(M(t)+r0*H(t)))`, `constructed_quantitative_region` proves an
+open positive-volume image of the label ball, field norm at least M(t)/2
+there, and
+`E(t) >= ofReal((c3/8)*M(t)^2*r(t)^3)`, where c3=4*pi/3.
+The image-volume proof uses both the actual homeomorphism and measure
+preservation. It does not require an extra integrability hypothesis.
+
+**Terminal energy divergence remains conditional.**
+`constructed_conditional_energy_divergence` assumes an eventual bound
+`H(t) <= C*(1-t)^(-p)` with C>0 and `0 <= p < 5*K/3`.
+The generic lower bound is a positive constant times
+`(1-t)^(-2*K+3*max(p-K,0))`. The current deformation APIs prove fixed-slab
+finiteness but do not discharge that terminal H-bound for the actual velocity.
+This does not establish that energy stays bounded either.
+
+These are time-dependent high-field regions, not an indefinitely amplifying
+fixed material set or a stability/attraction theorem. Exact assumptions,
+theorem names, and the deformation audit are in
+[the region proof outline](Paper/MagneticRegions.md) and [MHD_PROGRESS](MHD_PROGRESS.md).
+Targeted and full builds pass (11,277 full-build jobs); 47 new and 104 prior
+magnetic theorem audits use only `propext`, `Classical.choice`, and `Quot.sound`.
+The four inherited challenge `sorry` warnings are unchanged.
+
 ## Magnetic transport: completed foundation
 
 - `NavierStokes/MagneticInduction.lean` reuses the existing spacetime field
@@ -132,8 +171,9 @@ energy have uniform finite upper bounds on each such slab.
 
 For nonzero `Bz0`, the main theorem reuses the exact compact-velocity
 amplification law and proves pathwise and global spatial supremum-norm
-divergence as `t→1-`. There is no energy blow-up or finite-volume lower-bound
-claim. Joint C-infinity regularity, arbitrary-direction amplification,
+divergence as `t→1-`. The subsequent region extension above adds fixed-time
+energy lower bounds; terminal energy blow-up remains unproved.
+Joint C-infinity regularity, arbitrary-direction amplification,
 resistivity, Lorentz backreaction, and coupled MHD remain outside the result.
 
 See [the whole-space proof outline](Paper/WholeSpacePassiveInduction.md) and
