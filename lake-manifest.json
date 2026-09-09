@@ -111,6 +111,6 @@
    "inputRev": "v4.34.0-rc2",
    "inherited": true,
    "configFile": "lakefile.toml"}],
- "name": "fluidEquations",
+ "name": "NavierStokesAndEuler",
  "lakeDir": ".lake",
  "fixedToolchain": false}
