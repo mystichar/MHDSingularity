@@ -1,0 +1,313 @@
+# Paper II: passive resistive induction — first formal milestone
+
+Paper I's theorem scope and Lean files are unchanged. This extension proves
+identities, divergence preservation in specified classical energy classes,
+an exact coordinate transformation, and a conditional damped-mode cutoff.
+**It does not yet decide amplification for a positive-diffusivity solution in
+the actual assembled flows. No such resistive solution is constructed here.**
+
+Unless qualified by `Calculus` or `Mode`, theorem names below are in
+`NavierStokes.ResistiveMagnetic`. Definitions and proofs are in the new
+`NavierStokes/Resistive*.lean` files. Constants are dimensionless; time is the
+existing physical time, with terminal time 1. `eta_m` is magnetic diffusivity,
+not a similarity coordinate named eta.
+
+## PDE and divergence
+
+The exact definition is:
+
+```lean
+def ResistiveInductionOn (eta_m : ℝ) (times : Set ℝ)
+    (u : VelocityField) (B : MagneticField) : Prop :=
+  ∀ t ∈ times, ∀ x,
+    temporalDerivative B t x + spatialDerivative B t x (u (t,x)) =
+      spatialDerivative u t x (B (t,x)) + eta_m • spatialLaplacian B t x
+```
+
+The algebraic interface admits real coefficients; dissipativity and
+preservation theorems impose `0 ≤ eta_m`. `resistive_zero_iff` is an exact
+iff with `MagneticTransport.IdealInductionOn` at zero diffusivity.
+`material_derivative` proves the material chain rule for a differentiable
+supplied B and a supplied Lagrangian trajectory, including the Laplacian.
+
+`divergence_transport` assumes an open time set, joint `ContDiffOn ℝ ∞`
+regularity of u and B there, the resistive PDE, and `div u = 0`. For
+`f = divergenceScalar B`, it proves
+
+\[
+ \partial_t f+u\cdot\nabla f=\eta_m\Delta f.
+\]
+
+`divergenceScalar_eq` identifies f with the project's `spatialDivergence`.
+The scalar time/space operators are actual Frechet directional derivatives
+in spacetime. Component bridges identify these with the project's vector
+operators. The proof establishes product rules, commutation through third
+spatial derivatives, cancellation of the two cross contractions, and the
+vanishing derivative of `div u`; none is an additional PDE assumption.
+
+`periodic_divergence_preserved` gives `div B(t,x)=0` for every
+`t ∈ Icc a b` and x. Assumptions: `a ≤ b`, `eta_m ≥ 0`, an open smoothness
+domain containing `[a,b]`, joint smoothness of u and B on that domain,
+unit spatial periods of both, `div u=0`, induction on `(a,b)`, and initial
+`div B(a,x)=0`. The equation is required only on the forward slab interior;
+the open-domain regularity supplies derivatives at its endpoints.
+`periodic_passive_zero` proves the zero-data uniqueness used here by the
+nonincreasing squared L2 norm and the existing Gronwall theorem.
+
+`whole_divergence_preserved_l2` proves the same pointwise conclusion in
+whole space. It replaces periodicity with compact support of u at each
+interior time and an explicit energy class for
+`W = scalarLift (divergenceScalar B) = (div B) e2`:
+
+- W's slices are represented by `A t : SmoothL2Field Space` on `[a,b]`;
+- the actual temporal derivative of W is represented by `C t` on `(a,b)`;
+- `t ↦ (A t).toLp` is continuous on `[a,b]`, with derivative `(C t).toLp`
+  at each interior time.
+
+The smooth-L2 class supplies L2 integrability of all spatial jets.
+`whole_passive_zero_l2` proves uniqueness in this class; it does not assume
+magnetic divergence remains zero. Constructing these representatives and
+the L2 time derivative for a resistive solution remains an existence and
+regularity obligation. Compact support of B or W is not required.
+These hypotheses are sufficient and have not been optimized to minimal Ck
+regularity. No new witness with joint C-infinity regularity is asserted.
+
+## Energy and Ohmic loss
+
+`periodicEnergy B t` is one half of the existing unit-cell `cubeIntegral`
+of `‖B(t,x)‖²`. `ohmicDissipation eta_m B t` is eta_m times the sum of the
+three integrals of squared spatial partial derivatives.
+`periodic_energy_hasDerivAt` proves
+
+\[
+ E'(t)=\int_{\rm cell}\langle B,D_xu[B]\rangle
+       -\eta_m\sum_{i=0}^2\int_{\rm cell}\|\partial_i B\|^2.
+\]
+
+It assumes joint smoothness on the closed slab, unit periods of u and B,
+`div u=0` and the PDE on the interior, and an interior evaluation time.
+Magnetic divergence freedom is not needed for this energy identity.
+The proof differentiates the integral using the existing compact-cell API,
+then applies transport cancellation and periodic Laplacian integration by
+parts. `periodic_energy_balance` exports the spatial integral step.
+`ohmicDissipation_nonneg` and `accumulatedOhmicDissipation_nonneg` prove
+nonnegativity for eta_m ≥ 0 (and ordered endpoints for the time integral).
+`accumulatedOhmicDissipation` is the physical-time integral of the spatial
+Ohmic loss; a separate integrated-in-time energy equality is not exported.
+
+`wholeEnergy` uses the same half normalization with the existing whole-space
+real L2-square integral. `whole_energy_hasDerivAt_l2` proves the analogous
+whole-space identity with these explicit hypotheses:
+
+- the actual slices of B are `A s : SmoothL2Field Space`;
+- C represents the actual temporal derivative at t;
+- the magnetic curve in L2 has derivative C at t;
+- u is spatially smooth and compactly supported, with zero divergence;
+- the resistive PDE holds at t.
+
+`l2_laplacian_integrable` and `l2_laplacian_energy` reuse
+`EulerOrdinarySobolev.field_directional_ibp`. They discharge the magnetic
+Laplacian pairing and integration by parts from the spatial L2 jets. Compact
+u supplies integrability of transport and stretching, without requiring
+compact B. `whole_energy_balance_l2` exports this spatial identity.
+The additional `whole_energy_hasDerivAt` theorem covers uniformly compact B
+on a fixed slab; that is only a sufficient class, not a claim that diffusion
+preserves compact support. The real integral identities are used with their
+stated integrability premises. Paper I's ENNReal energy is retained for
+region lower bounds; no unconditional conversion of a possibly infinite
+energy to a real integral is made.
+
+## Actual assembled flows and clocks
+
+`actual_axial_material_derivative` uses the exact `MagneticPeriodicMain`
+budget, threshold, geometry, selected schedule, natural solution, gamma,
+and exponent. For either `actualPeriodicVelocity` or
+`actualCompactVelocity`, at t in the existing `Ioo (lateStart ...) 1`, a
+supplied differentiable resistive solution with instantaneous axial value
+`B(t,gamma t)=b e2` satisfies
+
+\[
+ \frac{d}{dt}B(t,\gamma(t))=\frac{K b}{1-t}e_2
+                         +\eta_m\Delta B(t,\gamma(t)).
+\]
+
+Only the proved axial column and trajectory transfer are used. The
+Laplacian need not be axial, so even preservation of an axial direction
+requires additional information in the resistive case. The result does not
+transfer the natural-core transverse gradient or Hessian to the assembled
+velocity. `actual_periodic_energy` and
+`actual_periodic_divergence_preserved` discharge velocity smoothness,
+periodicity, and incompressibility from that exact selected schedule.
+`actual_compact_energy_l2` discharges compact support and spatial smoothness,
+and uses the existing NS properties for the same velocity, pressure, and
+forcing to discharge incompressibility. It retains this matching NS
+certificate explicitly, as well as the magnetic L2 and PDE hypotheses.
+No independent natural-profile witness is introduced.
+
+`stretching_pathQ` proves `K/(1-t)=K/(d(eta)*pathQ eta t)` using the
+existing `NaturalAxisData.d`, for eta²<1. Both candidates use the original
+physical clock here; no additional viscosity or time rescaling occurs.
+
+## Exact transformed equation and effective Reynolds ratio
+
+For positive differentiable ell(t), set
+`C(t,y)=B(t,gamma(t)+ell(t)y)` and `U(t,y)=u(t,gamma(t)+ell(t)y)`.
+`rescaled_induction` proves the exact identity
+
+\[
+ \partial_t C+\ell^{-1}D_yC[U-\gamma'-\ell' y]
+ =\ell^{-1}D_yU[C]+\frac{\eta_m}{\ell^2}\Delta_y C.
+\]
+
+The theorem assumes B differentiable at the evaluated spacetime point,
+spatially smooth slices of u and B, derivatives of gamma and ell, positive
+ell, and the resistive PDE. `laplacian_pullback` proves the factor ell²
+before division. The transformation retains all advection, dilation,
+rotation and coupling terms present in U. There is no reduction to a
+transverse-only PDE for the actual assembled field in this milestone.
+Choosing gamma to be the existing distinguished trajectory instantiates the
+translation term; the actual-flow theorem above identifies its axial
+stretching. The generic transformation itself does not assume a magnetic
+profile or make ell an actual magnetic length scale.
+
+With `s=1-t=d0*q`, the comparison definitions give
+
+\[
+ Rm_{\rm eff}=\frac{K/s}{\eta_m/\ell^2}
+            =\frac{K\ell^2}{\eta_m s}.
+\]
+
+For the **additional scale hypothesis** ell=L s^beta with K,L,eta_m>0,
+`effectiveRm_power` gives `(K L²/eta_m) s^(2 beta-1)`.
+`effectiveRm_tendsto_infinity`, `effectiveRm_tendsto_zero`, and
+`effectiveRm_critical` classify the limits: infinity for beta<1/2, zero
+for beta>1/2, and the positive constant K L²/eta_m at beta=1/2.
+This classification is conditional on interpreting ell as the magnetic
+variation scale. The actual resistive magnetic beta is unknown.
+
+`cutoffRemaining` and `effectiveRm_cutoff` give the rate-equality scale
+
+\[
+ s_\eta=\left(\frac{\eta_m}{K L^2}\right)^{1/(2\beta-1)},\qquad
+ Rm_{\rm eff}(s_\eta)=1 \quad (\beta\ne1/2).
+\]
+
+The scale is positive, but need not lie in the chosen preterminal interval.
+`idealGainAtCutoff=(s0/s_eta)^K` is a dimensionless comparison definition,
+not a guaranteed maximum of a resistive solution. SI conversion is absent.
+
+## Honest conditional reduced mode and cutoff
+
+`pure_axial_of_curvature_closure` assumes a supplied resistive solution,
+a Lagrangian trajectory, the existing continuity/differentiability and
+continuous-gradient hypotheses for linear ODE uniqueness, the axial column
+`Du e2=alpha e2`, and the extra identity
+
+\[
+ \Delta B(t,\gamma(t))=-\mu(t)B(t,\gamma(t)).
+\]
+
+It proves that an initially pure axial field follows any supplied scalar
+solution `b'=(alpha-eta_m*mu)b` with matching initial data. This is an exact
+conditional path reduction; advection is removed by the material chain rule,
+and transverse coupling is excluded by the two explicit column/curvature
+identities. The curvature identity is not a consequence of the velocity
+transfer theorem. In particular, no transverse eigenprofile, or error bound
+for neglected terms, has been constructed for the actual flow.
+
+For `mu=(d/eta_m) s^(-(r+1))`, `Mode.trajectory_mode` proves the exact law
+for one supplied field on a finite slab with b<1, eta_m>0 and r>0:
+
+\[
+ b(t)=B_0 G(s),\qquad
+ G(s)=\left(\frac{s_0}{s}\right)^K
+       \exp\left[-\frac d r(s^{-r}-s_0^{-r})\right],\quad s_0=1-a.
+\]
+
+`Mode.gain_as_power`, `gain_initial` and `physical_time_mode` establish
+this formula, its normalized initial value, and its ODE. Under the further
+positive parameters K,d,r,s0, `gain_le_peak`, `gain_at_peak`,
+`peakGain_formula`, and `axial_mode_norm_le_peak` give
+
+\[
+ s_{\rm peak}=(d/K)^{1/r},\qquad
+ G(s)\le G_{\rm peak}
+ =s_0^K(K/d)^{K/r}\exp\left[\frac d r s_0^{-r}-\frac K r\right],
+ \qquad \|b(t)e_2\|\le |B_0|G_{\rm peak}.
+\]
+
+The global positive-s maximum is attained on a chosen forward interval only
+if it contains s_peak; `trajectory_peak_time` gives the interval condition.
+`gain_tendsto_zero` proves terminal decay of this mode for d,r>0.
+These are rigorous finite-eta **conditional mode** bounds. A closure with
+transverse eigenvalue lambda and ell=L s^beta would set
+`d=eta_m*lambda/L²`, `r=2 beta-1`; this interpretation requires an actual
+profile proof. No global supremum bound or guaranteed finite amplification
+factor for the assembled resistive PDE is concluded. No limit theorem with
+eta_m tending to zero is needed or claimed beyond the displayed exact law.
+
+## Relation to the ideal high-field regions
+
+`material_high_field_region` applies to any spatially smooth supplied B on
+an existing incompressible compact-velocity flow slab. For positive central
+norm M and any label radius r0>0, it proves a finite derivative bound H for
+`Q(xi)=B(t,Phi(t,xi))`. With
+`r=r0*M/(2*(M+r0*H))`, the image of the label ball is open, has volume
+`c3*r³`, has field norm at least M/2, and obeys the existing ENNReal bound
+`E(t) ≥ ofReal((c3/8)*M²*r³)`. The proof uses the actual invertible,
+measure-preserving flow API, not a determinant-only inference.
+
+For positive diffusivity Q is not asserted to equal F times the initial
+seed. Its M and H must come from the resistive solution. No terminal bound
+for H, diffusion-imposed minimum length, fixed material set amplification,
+energy divergence, or stability/attraction theorem follows from this
+fixed-time statement. Paper I's shrinking ideal regions do not discharge
+those resistive hypotheses.
+
+## Analytic construction audit and next obligations
+
+The repository already has substantial heat machinery; a new parabolic
+foundation should not be started from scratch. In particular:
+
+1. `EulerSobolevHeat.exists_viscous_mild_solution` in
+   `Euler/SobolevHeatVolterra.lean` handles a continuous, locally Lipschitz
+   source from Sobolev order q+1 to q. It has explicit budgets involving
+   `T + 2*parabolicConstant eta_m*sqrt T`. It reuses the contraction theorem
+   `EulerVolterraConvolution.exists_mild_solution`.
+2. `Euler/MildEquationBridge.lean` supplies Sobolev-level time derivative
+   bridges. `Euler/DivergenceFreeHeat.lean` supplies gradient-annihilator
+   preservation in its existing lifted heat/mild setting. Neither is an
+   instantiated classical resistive induction theorem for the actual
+   physical-space velocity and magnetic seed.
+3. The next adapter must represent `F(t,B)=-D B[u(t)]+D u(t)[B]` in the
+   appropriate existing Sobolev geometry, prove the derivative-loss product
+   and Lipschitz bounds for the actual selected coefficients on each fixed
+   finite slab, and match the heat generator normalization to eta_m Delta.
+4. It must construct compatible solutions across slabs, bootstrap enough
+   regularity for the pointwise PDE, and establish the displayed periodic
+   or whole-space L2 time/spatial hypotheses. For whole space, transport of
+   compact support must be replaced by justified magnetic-tail estimates.
+   All coefficient bounds may depend on the upper endpoint b<1.
+5. Separately, amplification needs resistive curvature/profile estimates
+   or valid comparison principles for this vector system. Neither the
+   ideal axial column nor the ideal derivative-bound region theorem
+   supplies the magnetic scale, eigen-curvature closure, or lower-order
+   remainder control. Without that additional analysis, the actual
+   finite-eta supremum and energy behavior remain undetermined.
+
+No resistive existence axiom, placeholder, or admitted theorem is added.
+There is no Lorentz feedback, coupled MHD, Hall term, reconnection model,
+energy blow-up assertion, attractor claim, or performance interpretation.
+
+## Validation
+
+- Targeted build of `NavierStokes.ResistiveActualAssembly` and
+  `NavierStokes.ResistiveWholeDivergence` passed, covering all new modules.
+- Full `lake build` passed: 11,290 jobs.
+- `scripts/audit_resistive_magnetic.lean`: all 77 exported new theorems
+  audited; dependencies are limited to `propext`, `Classical.choice`,
+  and `Quot.sound`.
+- All four prior magnetic audit scripts passed again: 151 theorem audits.
+- No `sorry`, `admit`, or axiom declarations occur in the new Lean files.
+  The four inherited `ComparatorChallenges` sorry warnings are unchanged.
+- Paper I's Lean files are unchanged; `git diff --check` passed.

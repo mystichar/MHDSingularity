@@ -1,4 +1,79 @@
-# MHDSingularity handoff: quantitative compact magnetic regions
+# MHDSingularity handoff: Paper II resistive foundation
+
+## Current Paper II extension from d7d2adb
+
+Paper I is frozen; none of its Lean files is changed. Read
+[Paper/ResistiveMagneticInduction.md](Paper/ResistiveMagneticInduction.md)
+for the complete statement/assumption inventory, proof outline and analytic
+construction audit. All new theorems are in `NavierStokes.ResistiveMagnetic`
+(with `Calculus` and `Mode` subnamespaces).
+
+Completed:
+
+- `ResistiveInductionOn`, `resistive_zero_iff`, `material_derivative`:
+  actual project derivatives, a diffusivity distinct from similarity eta,
+  and the material Laplacian term retained.
+- `divergence_transport`: classical div B solves scalar advection-diffusion,
+  proved by derivative commutation and cross-term cancellation.
+- `periodic_divergence_preserved`, `whole_divergence_preserved_l2`:
+  zero initial divergence implies zero divergence on a finite slab for
+  eta_m>=0. Whole-space preservation states the smooth-L2 jets and L2 time
+  derivative assumptions for the lifted divergence explicitly.
+- `periodic_energy_hasDerivAt`, `whole_energy_hasDerivAt_l2`:
+  half-normalized magnetic energy derivative equals stretching work minus
+  eta_m times the squared-gradient integral. Whole-space integration by
+  parts allows magnetic tails and uses compact u and smooth-L2 magnetic
+  jets. The compact-B variant is only an alternative sufficient class.
+- `actual_axial_material_derivative`, `actual_periodic_energy`,
+  `actual_periodic_divergence_preserved`, `actual_compact_energy_l2`:
+  reuse the same selected-schedule parameters, natural solution and actual
+  velocity; the last theorem keeps the matching NS certificate explicit.
+- `rescaled_induction`, `laplacian_pullback`, `stretching_pathQ`:
+  exact translated/dilated PDE, coefficient eta_m/ell², and s=d0*q.
+  No full natural-core gradient/Hessian transfer is assumed.
+- `effectiveRm_power`, `effectiveRm_tendsto_infinity`,
+  `effectiveRm_tendsto_zero`, `effectiveRm_critical`, `effectiveRm_cutoff`:
+  ratio and cutoff classification under an explicitly chosen power scale.
+- `pure_axial_of_curvature_closure`, `Mode.trajectory_mode`,
+  `Mode.gain_le_peak`, `Mode.peakGain_formula`,
+  `Mode.axial_mode_norm_le_peak`, `Mode.gain_tendsto_zero`:
+  exact conditional mode amplification, finite peak and terminal decay
+  for positive damping and r>0. The curvature closure is an extra magnetic
+  hypothesis, not an assembled-velocity property.
+- `material_high_field_region`: fixed-time region/volume/ENNReal energy
+  bound for the supplied smooth field and incompressible material flow.
+  No ideal Cauchy representation is asserted for resistive B.
+
+Remaining obligations:
+
+1. Construct a classical resistive solution for the actual prescribed
+   velocity. Adapt `EulerSobolevHeat.exists_viscous_mild_solution` to the
+   source `-DB[u]+Du[B]`, prove its derivative-loss/product estimates and
+   match the geometry and heat normalization. Prove compatibility across
+   finite slabs, classical regularity, and the needed L2 time/jet statements.
+2. Derive an actual resistive magnetic scale or curvature/profile bound.
+   The effective Rm classification and damped-mode cutoff do not supply it.
+   No transverse-only assembled PDE or controlled remainder is proved.
+3. Decide actual finite-eta supremum amplification and energy behavior.
+   There is currently no actual cutoff time, maximum field, or minimum
+   magnetic length theorem. No ideal blow-up survival is assumed.
+
+No resistive PDE existence, perpetual-divergence, or length-scale axiom is
+introduced. The results do not concern backreaction, coupled MHD, Hall
+terms, reconnection modeling, attractors, or performance claims.
+
+### Validation of this extension
+
+- Targeted build of `NavierStokes.ResistiveActualAssembly` and
+  `NavierStokes.ResistiveWholeDivergence` passed, covering all new modules.
+- Full `lake build` passed: 11,290 jobs.
+- `scripts/audit_resistive_magnetic.lean`: all 77 exported new theorems
+  audited; dependencies are limited to `propext`, `Classical.choice`,
+  and `Quot.sound`.
+- All four prior magnetic audit scripts passed again: 151 theorem audits.
+- No `sorry`, `admit`, or axiom declarations occur in the new Lean files.
+  The four inherited `ComparatorChallenges` sorry warnings are unchanged.
+- Paper I's Lean files are unchanged; `git diff --check` passed.
 
 ## Current extension from 3c5badb
 

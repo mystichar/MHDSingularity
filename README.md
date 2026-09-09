@@ -1,9 +1,42 @@
 # MHDSingularity
 
-This project studies ideal magnetic transport in the singular velocity fields
+This project studies ideal and resistive magnetic induction in the singular velocity fields
 from the inherited OpenAI Navier–Stokes formalization. The magnetic field is
 passive: no Lorentz-force backreaction or coupled MHD solution is asserted.
 The inherited results and their attribution are retained below.
+
+## Paper II: resistive identities and conditional cutoff
+
+Paper I's Lean results are preserved unchanged. The new `Resistive*.lean`
+modules define the passive resistive PDE, prove its exact ideal limit,
+propagate divergence freedom from initial data in periodic and specified
+whole-space L2 classes, and prove the half-normalized energy balance with
+Ohmic dissipation. The actual assembled periodic and compact velocities
+are connected explicitly; magnetic resistive solutions are still supplied
+hypotheses.
+
+The full moving/dilating coordinate equation retains advection and every
+stretching component, with diffusion coefficient `eta_m/ell(t)^2`.
+For an assumed magnetic scale `ell=L*(1-t)^beta`, the effective ratio is
+`Rm_eff=(K*L^2/eta_m)*(1-t)^(2*beta-1)`: it tends to infinity for beta<1/2,
+to zero for beta>1/2, and is constant for beta=1/2.
+
+An explicit curvature closure gives a rigorous damped axial mode with a
+finite peak and terminal decay when its curvature exponent exceeds one.
+The exact peak formula and rate-equality cutoff are proved. **This is not
+a cutoff or survival theorem for the actual assembled resistive solution.**
+Its existence, magnetic length scale, and curvature estimates remain open.
+The ideal positive-volume region bound extends geometrically to a supplied
+smooth resistive field, using that field's own central norm and variation
+bound; no minimum magnetic length scale follows yet.
+
+See [Paper/ResistiveMagneticInduction.md](Paper/ResistiveMagneticInduction.md)
+for theorem names, exact formulas, regularity/integrability assumptions,
+and the existing heat/Volterra APIs to reuse for the next construction.
+
+Targeted and full builds pass (11,290 jobs). All 77 new and 151 prior
+magnetic theorem audits use only `propext`, `Classical.choice`, and
+`Quot.sound`. The four inherited challenge `sorry` warnings are unchanged.
 
 ## Compact-seed high-field regions and small initial energy
 

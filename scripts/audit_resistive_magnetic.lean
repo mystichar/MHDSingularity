@@ -1,0 +1,92 @@
+import NavierStokes.ResistiveActualAssembly
+import NavierStokes.ResistiveAxialModel
+import NavierStokes.ResistiveDifferentialCalculus
+import NavierStokes.ResistiveDivergenceAlgebra
+import NavierStokes.ResistiveDivergencePreservation
+import NavierStokes.ResistiveMagneticDivergence
+import NavierStokes.ResistiveMagneticEnergy
+import NavierStokes.ResistiveMagneticInduction
+import NavierStokes.ResistiveMagneticL2Energy
+import NavierStokes.ResistiveMagneticRegions
+import NavierStokes.ResistiveModeCutoff
+import NavierStokes.ResistiveSimilarityScaling
+import NavierStokes.ResistiveWholeDivergence
+
+-- Every exported theorem in the first Paper II milestone.
+#print axioms NavierStokes.ResistiveMagnetic.actual_axial_material_derivative
+#print axioms NavierStokes.ResistiveMagnetic.stretching_pathQ
+#print axioms NavierStokes.ResistiveMagnetic.actual_periodic_energy
+#print axioms NavierStokes.ResistiveMagnetic.actual_periodic_divergence_preserved
+#print axioms NavierStokes.ResistiveMagnetic.actual_compact_energy_l2
+#print axioms NavierStokes.ResistiveMagnetic.pure_axial_of_curvature_closure
+#print axioms NavierStokes.ResistiveMagnetic.Calculus.P_smooth
+#print axioms NavierStokes.ResistiveMagnetic.Calculus.P_comm
+#print axioms NavierStokes.ResistiveMagnetic.Calculus.P_mul
+#print axioms NavierStokes.ResistiveMagnetic.Calculus.P_add
+#print axioms NavierStokes.ResistiveMagnetic.Calculus.P_const_mul
+#print axioms NavierStokes.ResistiveMagnetic.Calculus.P_sum
+#print axioms NavierStokes.ResistiveMagnetic.Calculus.P_comm_three
+#print axioms NavierStokes.ResistiveMagnetic.Calculus.Div_smooth
+#print axioms NavierStokes.ResistiveMagnetic.Calculus.Div_Adv
+#print axioms NavierStokes.ResistiveMagnetic.Calculus.Div_time
+#print axioms NavierStokes.ResistiveMagnetic.Calculus.Div_Lap
+#print axioms NavierStokes.ResistiveMagnetic.Calculus.cross_contraction
+#print axioms NavierStokes.ResistiveMagnetic.Calculus.Lap_smooth
+#print axioms NavierStokes.ResistiveMagnetic.Calculus.Adv_smooth
+#print axioms NavierStokes.ResistiveMagnetic.Calculus.divergence_transport
+#print axioms NavierStokes.ResistiveMagnetic.passive_energy_balance
+#print axioms NavierStokes.ResistiveMagnetic.periodic_passive_zero
+#print axioms NavierStokes.ResistiveMagnetic.scalarLift_passive
+#print axioms NavierStokes.ResistiveMagnetic.periodic_divergence_preserved
+#print axioms NavierStokes.ResistiveMagnetic.component_smooth
+#print axioms NavierStokes.ResistiveMagnetic.P_component
+#print axioms NavierStokes.ResistiveMagnetic.component_time
+#print axioms NavierStokes.ResistiveMagnetic.component_space
+#print axioms NavierStokes.ResistiveMagnetic.divergenceScalar_eq
+#print axioms NavierStokes.ResistiveMagnetic.component_advection
+#print axioms NavierStokes.ResistiveMagnetic.component_laplacian
+#print axioms NavierStokes.ResistiveMagnetic.divergence_transport
+#print axioms NavierStokes.ResistiveMagnetic.ohmicDissipation_nonneg
+#print axioms NavierStokes.ResistiveMagnetic.periodic_energy_balance
+#print axioms NavierStokes.ResistiveMagnetic.periodic_energy_hasDerivAt
+#print axioms NavierStokes.ResistiveMagnetic.whole_energy_balance
+#print axioms NavierStokes.ResistiveMagnetic.whole_energy_hasDerivAt
+#print axioms NavierStokes.ResistiveMagnetic.accumulatedOhmicDissipation_nonneg
+#print axioms NavierStokes.ResistiveMagnetic.wholeOhmicDissipation_nonneg
+#print axioms NavierStokes.ResistiveMagnetic.resistive_zero_iff
+#print axioms NavierStokes.ResistiveMagnetic.material_derivative
+#print axioms NavierStokes.ResistiveMagnetic.l2_laplacian_integrable
+#print axioms NavierStokes.ResistiveMagnetic.l2_laplacian_energy
+#print axioms NavierStokes.ResistiveMagnetic.whole_energy_balance_l2
+#print axioms NavierStokes.ResistiveMagnetic.whole_energy_hasDerivAt_l2
+#print axioms NavierStokes.ResistiveMagnetic.material_high_field_region
+#print axioms NavierStokes.ResistiveMagnetic.Mode.profile_pos
+#print axioms NavierStokes.ResistiveMagnetic.Mode.profile_deriv
+#print axioms NavierStokes.ResistiveMagnetic.Mode.profile_le_peak
+#print axioms NavierStokes.ResistiveMagnetic.Mode.gain_pos
+#print axioms NavierStokes.ResistiveMagnetic.Mode.gain_le_peak
+#print axioms NavierStokes.ResistiveMagnetic.Mode.gain_tendsto_zero
+#print axioms NavierStokes.ResistiveMagnetic.Mode.gain_as_power
+#print axioms NavierStokes.ResistiveMagnetic.Mode.gain_initial
+#print axioms NavierStokes.ResistiveMagnetic.Mode.gain_deriv
+#print axioms NavierStokes.ResistiveMagnetic.Mode.physical_time_mode
+#print axioms NavierStokes.ResistiveMagnetic.Mode.gain_at_peak
+#print axioms NavierStokes.ResistiveMagnetic.Mode.peakGain_formula
+#print axioms NavierStokes.ResistiveMagnetic.Mode.trajectory_mode
+#print axioms NavierStokes.ResistiveMagnetic.Mode.trajectory_peak_time
+#print axioms NavierStokes.ResistiveMagnetic.Mode.axial_mode_norm_le_peak
+#print axioms NavierStokes.ResistiveMagnetic.partial_rescale
+#print axioms NavierStokes.ResistiveMagnetic.laplacian_pullback
+#print axioms NavierStokes.ResistiveMagnetic.moving_probe_equation
+#print axioms NavierStokes.ResistiveMagnetic.derivative_pullback_apply
+#print axioms NavierStokes.ResistiveMagnetic.rescaled_induction
+#print axioms NavierStokes.ResistiveMagnetic.effectiveRm_eq
+#print axioms NavierStokes.ResistiveMagnetic.effectiveRm_power
+#print axioms NavierStokes.ResistiveMagnetic.effectiveRm_tendsto_infinity
+#print axioms NavierStokes.ResistiveMagnetic.effectiveRm_tendsto_zero
+#print axioms NavierStokes.ResistiveMagnetic.effectiveRm_critical
+#print axioms NavierStokes.ResistiveMagnetic.cutoffRemaining_pos
+#print axioms NavierStokes.ResistiveMagnetic.effectiveRm_cutoff
+#print axioms NavierStokes.ResistiveMagnetic.whole_passive_balance_l2
+#print axioms NavierStokes.ResistiveMagnetic.whole_passive_zero_l2
+#print axioms NavierStokes.ResistiveMagnetic.whole_divergence_preserved_l2
