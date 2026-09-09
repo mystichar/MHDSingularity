@@ -17,35 +17,71 @@ The inherited results and their attribution are retained below.
 
 These results do not assume that `F` is a spatial derivative of a global flow.
 
-## Research roadmap
+## Natural-core amplification: proved, conditional on induction
 
-`NavierStokes/MagneticSimilarityTrajectory.lean` now proves the constant-eta
-trajectory for the natural core, using the inherited unique-root theorem:
-`q(t) = (1-t)/(1-η₀²)` and `γ*(t) = q(t)^(1/2-h) η₀ e₂`.
-The theorem `distinguished_trajectory_isLagrangian` applies on every finite
-`[a,b]` with `b < 1`, under `SmallParameters` and `IsNaturalSolution`.
-The assembled-velocity transfer theorem has an explicit path-agreement
-hypothesis; that hypothesis has not yet been discharged for the final solution.
+`MagneticSimilarityTrajectory.lean` proves the distinguished natural-core
+trajectory `γ(t) = q(t)^D η₀ e₂`, where `q(t) = (1-t)/d₀` and `η₀` is the
+proved unique root of `H(h,j,η₀)=0`. The existing definitions are
+`D=1/2-h`, `A=1/2+h`, `d₀=1-η₀²`, and `L₀=1-2hη₀²`.
 
-The sequence is:
+`MagneticSimilarityGradient.lean` proves the exact Cartesian gradient:
 
-1. Use the proved root `H(h, j₀, η₀) = 0` to construct a path with constant
-   similarity coordinate `η(t) = η₀` and prove that it is Lagrangian.
-2. Establish the region and times on which the assembled Navier–Stokes velocity
-   agrees with the natural core along that path. Equality of spatial derivatives
-   requires local spatial agreement, not just equality of velocity values.
-3. Calculate `A_mag(t) = Dₓu_NS(t, γ*(t))` on that exact path and apply the
-   existing deformation/Cauchy theorem.
-4. Analyze the resulting operator ODE and derive the exact parameter-dependent
-   exponent `β₀(h, j₀)`, including hypotheses on the initial magnetic direction
-   and any nonzero leading coefficient.
-5. Prove an asymptotic such as `B_z = C q^(-β₀) (1 + o(1))` and, if supported
-   by the calculation, a quantitative estimate `β₀ = 4 + O(j₀²)` with its
-   parameter regime and uniformity stated explicitly.
+```text
+[ -α/2  -rot   0 ]
+[  rot  -α/2   0 ]
+[   0     0    α ]
+```
 
-The exponent and magnetic amplification asymptotic are research targets, not
-proved results. In particular, `β₀ = 4` is not hard-coded. Curl identities,
-resistivity, global flow derivatives, and MHD backreaction are deferred.
+Its strain trace is zero. `MagneticCoreAmplification.lean` proves
+
+```text
+K = (4*d₀² + 2*A*D*η₀²)/L₀
+α(t) = K/(1-t)
+4-K = η₀²*(15/2 - 8*h + 2*h² - 4*η₀²)/L₀
+0 < 4-K < j²/2
+3.9999995 < K < 4
+```
+
+These bounds use the actual `SmallParameters` assumptions:
+`0<h≤1/1000` and `0<j≤1/1000`. The exponent is exact and is strictly below four.
+For a supplied natural solution and ideal induction field `B`, on
+`a≤t≤b<1`, `pure_axial_seed_transport` proves
+
+```text
+B(a,γ(a)) = Bz0 e₂  ⇒  B(t,γ(t)) = Bz0*((1-a)/(1-t))^K e₂.
+```
+
+`axial_component_transport` proves the same scalar formula for the axial
+component of an arbitrary seed. The magnetic hypotheses are continuity along
+the closed path, joint differentiability at its interior points, and the ideal
+induction equation on the interior time slab. The amplification factor is
+positive and is greater than one when `a<t`.
+
+## Assembled-velocity transfer: separate minimal-condition audit
+
+`MagneticAxisTransfer.lean` proves exact axial-line agreement of the slow Borel
+base with the natural core. Differentiating that line identity supplies the
+axial Jacobian column without asserting full gradient or swirl equality.
+For every schedule retained by the actual candidate witness,
+`selected_schedule_minimal_transfer_late_interval` proves that there is `T<1`
+such that, for `T<t<1`, both the periodic and compact whole-space velocities obey
+
+```text
+γ′(t) = u_final(t,γ(t))
+Dₓu_final(t,γ(t)) e₂ = (K/(1-t)) e₂.
+```
+
+This audit uses the actual parameters and a supplied natural solution with those
+parameters. It checks the actual correction germs, zeroth cutoff, spatial
+plateau, and time activation. See [MHD_PROGRESS.md](MHD_PROGRESS.md) for the
+correction-by-correction value and axial-derivative audit.
+
+The magnetic amplification theorems concern the natural core and are conditional
+on a supplied induction solution. They do not prove global magnetic PDE
+existence, divergence propagation, finite-volume amplification, or magnetic
+amplification for an assembled Navier–Stokes field. No full rotating deformation
+matrix is needed. Curl identities, resistivity, global flow derivatives, and
+MHD backreaction remain deferred.
 
 The Lake package name remains `NavierStokesAndEuler`, consistently in
 `lakefile.toml` and `lake-manifest.json`; MHDSingularity is the repository name.
