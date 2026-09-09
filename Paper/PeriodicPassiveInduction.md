@@ -3,6 +3,10 @@
 This document describes the formal theorem and its proof. It makes no claim
 of novelty or publication readiness; no literature comparison has been made.
 
+The subsequent [whole-space compact-seed theorem](WholeSpacePassiveInduction.md)
+now supplies the compact whole-space construction. The periodic proofs
+described here are unchanged.
+
 ## The closed statement
 
 `NavierStokes.MagneticPeriodicMain.periodic_main` has no construction
@@ -108,7 +112,7 @@ This is passive, ideal induction in a prescribed forced Navier–Stokes
 velocity. The forcing is the one in the existing NS construction, not an
 external assumption about an arbitrary NS field. B does not act on the
 velocity. No resistivity, Lorentz backreaction, arbitrary-direction
-amplification transfer, whole-space compact-seed transport, finite-volume
+amplification transfer, finite-volume
 energy growth, or magnetic-energy blow-up is proved. Pointwise and supremum
 norm divergence do not establish energy divergence. No fusion-performance
 claim is made.

@@ -108,6 +108,41 @@ and its scalar ODE for any prescribed axial-column coefficient. No
 arbitrary-seed component formula is transferred to either assembled field:
 that would require an axial **row** identity, which is not proved here.
 
+## Closed whole-space compact-seed main theorem
+
+`MagneticCompactMain.whole_space_main` constructs one whole-space
+ideal-induction field for the **existing** `actualCompactVelocity`, with no
+upstream construction hypotheses. It uses the same selected schedule,
+actual pressure sum, compact forcing, and retained natural profile as the
+existing Navier–Stokes construction. The velocity is not modified.
+
+`MagneticCompactSeed` constructs the curl of a translated cutoff times
+`(Bz0/2) e₂ × (x-gamma(a))`. The seed is smooth, compactly supported,
+divergence free, and exactly `Bz0 e₂` near `gamma(a)`.
+`MagneticCompactFlow` transports this spatially varying seed by the actual
+flow Jacobian, `B(t,x)=F(t,Y(t,x)) B_a(Y(t,x))`, using the existing Euler flow,
+inverse, determinant, and divergence-pushforward results.
+
+`MagneticCompactSolution` glues compatible finite slabs into **one** field
+on `[a,1)`. It proves joint continuity, interior joint C1 regularity, spatial
+smoothness, induction, and divergence freedom. Closed support is contained
+in the flow image of the seed support; on each fixed `[a,b]`, `b<1`, it lies
+in one compact tube. The global spatial supremum and **whole-space** magnetic
+energy have uniform finite upper bounds on each such slab.
+
+For nonzero `Bz0`, the main theorem reuses the exact compact-velocity
+amplification law and proves pathwise and global spatial supremum-norm
+divergence as `t→1-`. There is no energy blow-up or finite-volume lower-bound
+claim. Joint C-infinity regularity, arbitrary-direction amplification,
+resistivity, Lorentz backreaction, and coupled MHD remain outside the result.
+
+See [the whole-space proof outline](Paper/WholeSpacePassiveInduction.md) and
+[MHD_PROGRESS.md](MHD_PROGRESS.md) for exact statements and validation.
+The completed periodic Lean proofs remain unchanged. The full build passes
+(11,270 jobs), and all 66 new plus 38 prior audited declarations use only
+`propext`, `Classical.choice`, and `Quot.sound`; no `sorryAx` occurs in these
+proof chains. Four unrelated inherited challenge warnings remain.
+
 ## Closed periodic Navier–Stokes and magnetic main theorem
 
 `MagneticPeriodicMain.periodic_main` has **no upstream construction
@@ -175,8 +210,7 @@ natural-solution parameters. Induction, continuity, differentiability, and
 initial data are conclusions of construction, not assumed properties of `B`.
 The physical-time formula remains `((1-a)/(1-t))^K`.
 
-Remaining scope: no whole-space compact-seed existence construction,
-arbitrary-seed amplification transfer, resistivity, magnetic backreaction,
+Remaining scope: no arbitrary-seed amplification transfer, resistivity, magnetic backreaction,
 finite-volume amplification, or magnetic-energy/coupled-MHD blow-up theorem.
 Validation: the full build passes (11,263 jobs); all 29 declarations in
 `scripts/audit_magnetic_periodic.lean` use only `propext`, `Classical.choice`,

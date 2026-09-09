@@ -1,4 +1,179 @@
-# MHDSingularity handoff: closed periodic main theorem and norm consequences
+# MHDSingularity handoff: closed whole-space compact-seed ideal induction
+
+## Current milestone after 4e276b5
+
+The completed periodic Lean proofs are preserved unchanged. Five new modules
+construct a compact smooth solenoidal seed, transport spatially varying
+seeds, control supports and whole-space energy on finite slabs, glue one
+preterminal field, and instantiate the exact compact NS/amplification data.
+The readable outline is `Paper/WholeSpacePassiveInduction.md`.
+
+### Seed: exact convention and statements
+
+In `MagneticCompactSeed`, with `center=gamma(a)`:
+
+```text
+linearPotential Bz0 (x-center)
+  = (Bz0/2) * (-(x-center)_1 e0 + (x-center)_0 e1)
+potential center Bz0 x
+  = spatialCutoff(x-center) • linearPotential Bz0 (x-center)
+seed center Bz0 = SpatialCurl.curl (potential center Bz0)
+```
+
+This is the requested half-cutoff cross-product potential in the project's
+curl convention. `curl_linear` proves its uncut curl is exactly `Bz0 e2`,
+checking the sign and factor. `seed_eq_on_plateau`, `seed_local_constant`,
+and `seed_at_center` give the local constant identity. `seed_smooth`,
+`seed_supported`, `seed_compact`, and `seed_divergence` prove global spatial
+smoothness, closed support in the translated support cylinder, compact
+support, and zero divergence, for every center and amplitude.
+
+### Actual finite-slab construction
+
+`MagneticCompactFlow.Slab.coefficient` uses
+`SmoothTimeField.ofContDiffOnCompactSupport` for the internally shifted
+interval `[0,b-a]`. `coefficient_apply` identifies it with the original
+velocity at physical time `a+s`; `coefficient_lipschitz` supplies a uniform
+finite-slab spatial Lipschitz constant from its bounded derivative path.
+The bounds may depend on b. No bound through t=1 is assumed.
+
+`MagneticCompactMain.velocity_supported` proves the actual compact velocity
+has closed spatial support in the existing support cylinder at every time.
+`actualData` uses exactly this support, the selected-schedule smoothness
+from `assembled_velocities_smooth`, and the existing compact NS divergence
+property. It does not modify or further localize the velocity.
+
+The physical-time flow wrappers reuse the existing `EulerSmoothBanachFlow`
+Picard flow, inverse, path-space regularity, Jacobian evolution, and
+determinant-one theorem. For a smooth seed W, the actual definitions are
+
+```text
+F t xi = fderiv real (Phi t) xi
+magnetic W (t,x) = F t (Y t x) (W (Y t x)).
+```
+
+`Slab.magnetic_initial`, `magnetic_continuousOn`, `magnetic_contDiffAt`,
+`magnetic_spatial_smooth`, and `magnetic_induction` prove initial data,
+endpoint continuity, interior joint C1 regularity, all finite spatial
+orders, and stretching-form ideal induction. The proof differentiates
+`magnetic W (t,Phi t xi)=F t xi (W xi)` with fixed xi, using `F_hasDerivAt`.
+`magnetic_divergence_free` uses `F_det_one` and the existing
+`EulerPacketVolumeDivergence.divergence_pushforward` with the varying seed.
+No second time derivative or unjustified C2 regularity of B is invoked.
+
+### Support, whole-space energy, and overlap
+
+`MagneticCompactFlow.Slab.transported_support` states:
+
+```text
+tsupport (fun x => magnetic W (t,x)) subset Phi t '' tsupport W.
+```
+
+`supportTube_compact` proves compactness of the image of
+`[a,b] × tsupport W`; `magnetic_supported_tube` gives uniform support
+containment in this tube. These are actual transported-support statements,
+not amplitude estimates substituted for support information.
+
+`MagneticCompactFlow.energy B t` is the ENNReal nonnegative Lebesgue integral
+`(1/2) * integral_R3 norm(B(t,x))^2 dx`. `compact_slab_bounds` proves:
+
+```text
+exists C >= 0, exists E < infinity, forall t in [a,b],
+  (forall x, norm(B(t,x)) <= C) and supNorm B t <= C and
+  energy B t <= E and energy B t < infinity.
+```
+
+Its hypotheses are joint continuity on the fixed slab and support in one
+compact set. The integral is bounded by an indicator of that set, giving
+`E=(1/2)*C^2*volume(K)`. It does not integrate a nonzero constant over all
+of R3. There is no upper bound asserted uniformly as b approaches one.
+
+`Slab.Phi_overlap`, `F_overlap`, `Y_overlap`, and `magnetic_overlap` compare
+slabs with the same velocity, initial time, and seed, using the established
+flow-uniqueness argument. `MagneticCompactSolution.Data.magnetic` glues a
+strictly increasing cofinal sequence of upper endpoints into ONE field.
+`magnetic_eq_slab` proves compatibility. The exported regularity, induction,
+divergence, and initial-data theorems all apply to that single field.
+`Data.transported_support` retains the precise flow-image containment on
+finite restrictions; `uniform_support` and `slab_bounds` give the compact
+support and norm/energy estimates for every fixed preterminal slab.
+
+### Closed theorem and exact upstream matching
+
+In `NavierStokes.MagneticCompactMain`:
+
+```text
+whole_space_main : exists scales, Selected scales and
+  exists forcing a, 0 < a and a < 1 and
+  R3CompactCandidate.Properties (velocity scales) (pressure scales) forcing and
+  ContDiff real infinity forcing and
+  forall Bz0 : real, exists B,
+    MagneticConclusions (velocity scales) a Bz0 B.
+```
+
+`velocity scales` is exactly `actualCompactVelocity` at the existing
+`selectedBudget`, `selectedThreshold`, and `selectedThreshold_geometry`.
+`pressure scales` is the existing compact pressure of the actual pressure
+sum using the same schedule. The forcing is the existing `compactForce`
+of the forcing supplied by `ActualCandidateAssembly.selected_witness`.
+`R3CompactCandidate.of_localized_fields` proves the NS properties for these
+same fields. No new velocity localization is introduced.
+
+The natural-profile proof is
+`MagneticPeriodicMain.naturalSolution`, i.e. the same retained
+`ActualPrimary.nominal.axis.natural.profile.family.natural`. No independent
+natural witness or schedule is used. The main theorem chooses a late regular
+time before choosing a seed amplitude. Its `MagneticConclusions` exports:
+
+- `B(a,x)=seed (gamma a) Bz0 x` for every x and local equality to `Bz0 e2`;
+- joint continuity on `[a,1)`, interior joint C1 regularity, and spatial
+  smoothness at every time;
+- induction for this actual compact velocity and magnetic divergence freedom;
+- uniform compact support and finite supremum/whole-space-energy bounds on
+  every fixed `[a,b]`, `b<1`;
+- `B(t,gamma t)=Bz0*((1-a)/(1-t))^K e2` for every `a<=t<1`;
+- for `Bz0 != 0`, pathwise norm divergence and global spatial supremum-norm
+  divergence as `t -> 1-`.
+
+The compact amplification and norm-divergence theorems are reused without
+changing their exponent or physical-time formula. Global supremum divergence
+uses the actual spatial supremum and its pointwise lower bound, justified
+by the proved slab boundedness; it is not an essential-supremum assertion.
+
+### Remaining assumptions and exclusions
+
+`whole_space_main` has no upstream construction hypotheses. The generic
+transport lemmas retain explicit regularity, compact-support, and divergence
+assumptions, all discharged in the closed theorem. No magnetic PDE solution
+or suitable flow wrapper is assumed. Joint C-infinity regularity is not
+claimed; all spatial orders and interior joint C1 regularity are proved.
+
+There is no magnetic-energy blow-up, arbitrary-direction amplification,
+finite-volume lower bound, resistive amplification, Lorentz backreaction,
+or coupled-MHD theorem. Finite-slab energy upper bounds imply no energy-growth
+lower bound. The velocity remains prescribed and forced, with viscosity one
+and physical singular time one. No novelty or publication claim is made.
+
+### Validation
+
+- Targeted `lake build NavierStokes.MagneticCompactMain` passed, including
+  all five new modules.
+- Full `lake build` passed: 11,270 jobs. Four pre-existing challenge `sorry`
+  warnings remain in `ComparatorChallenges/Euler.lean` and
+  `ComparatorChallenges/NavierStokes.lean`, outside the audited proof chain.
+- `scripts/audit_magnetic_compact.lean` passed for all 66 audited declarations:
+  every new public theorem, plus the coefficient and actual-data definitions.
+  The closed whole-space main theorem uses only `propext`, `Classical.choice`,
+  and `Quot.sound`, with no `sorryAx` or custom axiom dependency.
+- Both prior periodic audit scripts passed again (9 + 29 declarations).
+  All 104 audited declarations use only the same standard logical axioms.
+- The new Lean modules contain no `sorry`, `admit`, or axiom declarations.
+  Existing Lean proofs and the prior audit scripts are unchanged from
+  `4e276b5`. Whitespace checks passed.
+
+---
+
+# Historical handoff: closed periodic main theorem and norm consequences
 
 ## Current milestone
 
