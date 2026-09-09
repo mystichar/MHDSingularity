@@ -1,6 +1,231 @@
-# MHDSingularity handoff: exact natural-core magnetic amplification
+# MHDSingularity handoff: assembled conditional magnetic amplification
 
-## Current milestone
+## Current milestone after local commit 07a694d
+
+New module: `NavierStokes/MagneticAssembledAmplification.lean`.
+The earlier trajectory, gradient, core amplification, and minimal transfer
+proofs are preserved. README now records the assembled conditional results.
+No magnetic field or global magnetic PDE solution is constructed.
+
+### Exact candidates, parameters, and physical clock
+
+The new theorems use `MagneticAxisTransfer.actualPeriodicVelocity` and
+`actualCompactVelocity` without changing their definitions. Parameters remain
+`budget N0 : Nat`, `hN : geometricThreshold≤N0`, `scales : Nat→Nat`, and the
+actual `MixedCandidateWitness.SelectedSchedule ... scales`, including the
+same potential, direct, and pressure sequences. A supplied
+`NaturalProfile.IsNaturalSolution h nominal.axis.j Λ P0 a0 f U V Pr` uses
+`CorrectionInitialization.ActualPrimary.h` and `nominal.axis.j`.
+
+Write `γ=trajectory h (distinguishedEta nominal.axis.small)` and
+`K=axialExponent nominal.axis.small`. These are existing definitions. All exact
+exponent identities and `3.9999995<K<4` are reused, not rederived.
+
+Both assembled fields include the existing time activation and spatial cutoffs;
+the periodic one additionally periodizes. Both are viscosity-one fields in
+physical time `t`, with singular time `1`. The formula in both theorems is
+`((1-a)/(1-t))^K`. There is no new time or spatial rescaling.
+The comparator's separate positive-viscosity force rescaling is not silently
+applied to either field, and no arbitrary-viscosity induction theorem is claimed.
+
+`assembled_velocities_smooth` extracts smoothness of the actual sums from
+`SelectedSchedule` and proves both final velocities smooth on `t<1`.
+`gradient_continuousOn_along_path` derives Jacobian continuity from smoothness.
+`exists_late_axial_flows` combines this with the existing minimal transfer
+interval. `lateStart` chooses one common threshold; `lateStart_spec` proves
+it is below one and retains the late-flow facts for both candidates. This
+threshold only restricts theorem applicability; it does not alter either field.
+
+### Generic scalar transport
+
+`pure_axial_transport_of_scalar_solution` assumes a supplied Lagrangian path,
+ideal induction, continuity of `B(t,γ(t))` on `[a,b]`, joint differentiability
+of `B` at the interior path points, and continuity of `Dₓu(t,γ(t))` on `[a,b]`.
+If the axial column is `α(t)e₂`, and a continuous scalar function `β` satisfies
+`β′=αβ` on `(a,b)` and `β(a)=Bz0`, then a pure seed implies
+`B(t,γ(t))=β(t)e₂` on `[a,b]`.
+
+`pure_axial_follows_scalar_ode` removes the supplied scalar-solution assumption:
+it constructs such a `β` using `TangentODE.exists_linear_solution`. The
+continuous scalar coefficient comes from the axial component of the actual
+continuous Jacobian column, agreeing with `α` on interior times. It concludes
+
+```text
+exists β, β(a)=Bz0 and ContinuousOn β [a,b]
+  and (forall t in (a,b), HasDerivAt β (α(t)*β(t)) t)
+  and (forall t in [a,b], B(t,γ(t))=β(t)e₂).
+```
+
+Both proofs use the existing material chain rule and linear-ODE uniqueness.
+They do not assume the entire magnetic field is axial away from the path.
+
+`LateAxialFlow u γ K T` packages path/Jacobian continuity on `(T,1)`, the
+trajectory derivative, and the column `K/(1-t)e₂`. Its three proved consumers
+are `LateAxialFlow.pure_axial_transport`,
+`LateAxialFlow.pure_axial_transport_preterminal`, and
+`LateAxialFlow.magnetic_norm_tendsto_atTop`. The power-law consumer reuses
+`MagneticCoreAmplification.pure_axial_transport_of_directional_gradient` and
+its previously verified exponent/power-law lemmas.
+
+### Assembled finite-interval theorem statements
+
+In namespace `NavierStokes.MagneticAssembledAmplification`:
+
+- `periodic_pure_axial_transport` uses
+  `u=actualPeriodicVelocity budget N0 hN scales`.
+- `compact_pure_axial_transport` uses
+  `u=actualCompactVelocity budget N0 hN scales`.
+
+For both, let `T₀=lateStart budget N0 hN scales hsel hs`. In addition to the
+construction parameters and supplied natural solution above, the hypotheses
+are exactly:
+
+1. `T₀<a`, `a≤b`, `b<1`.
+2. A supplied `B : MagneticField` with
+   `IdealInductionOn (Ioo a b) u B`, referring to the ASSEMBLED velocity.
+3. `ContinuousOn (fun t => B(t,γ(t))) (Icc a b)`.
+4. `∀t∈Ioo a b, DifferentiableAt ℝ B (t,γ(t))`.
+5. `B(a,γ(a))=Bz0 • e₂`.
+
+For every `t∈Icc a b`, the conclusion is
+
+```text
+B(t,γ(t)) = (Bz0*((1-a)/(1-t))^K) • e₂.
+```
+
+No extra assumed Jacobian continuity, neighborhood equality to the natural
+core, or full-gradient equality appears in these specializations. The
+necessary velocity regularity and late column identity are discharged.
+
+### One-solution conditional norm divergence
+
+`periodic_magnetic_norm_tendsto_atTop` and
+`compact_magnetic_norm_tendsto_atTop` have the same construction data and
+`T₀<a<1`, but assume `Bz0≠0` and ONE fixed `B` satisfying:
+
+```text
+IdealInductionOn (Ioo a 1) u B
+ContinuousOn (fun t => B(t,γ(t))) (Ico a 1)
+forall t in Ioo a 1, DifferentiableAt real B (t,γ(t))
+B(a,γ(a)) = Bz0 • e₂.
+```
+
+They conclude `Tendsto (fun t => norm(B(t,γ(t)))) (nhdsWithin 1 (Iio 1)) atTop`.
+The same `B` is restricted to `[a,t]` for each evaluation time, giving the exact
+formula on `[a,1)`. The norm becomes
+`abs(Bz0)*(1-a)^K*(1-t)^(-K)`, whose constant prefactor is strictly positive.
+`axialExponent_pos` and `BlowupImplication.negative_power_tendsto_atTop` give
+the limit. No sequence of unrelated interval-wise solutions is selected.
+
+The periodic-velocity theorem does not require spatial periodicity of `B` for
+this pathwise implication. A future periodic existence theorem should provide
+that property in addition to the induction and regularity hypotheses.
+
+### Remaining mathematical assumptions and limits
+
+A suitable induction solution is still supplied, not proved to exist. Magnetic
+divergence preservation is not proved; the stretching-form predicate and the
+incompressible-induction predicate remain distinct. No arbitrary-seed axial
+component theorem is transferred: a column identity preserves axial seeds,
+but does not control the axial contribution of a transverse seed. The required
+axial row/covector identity is not part of this milestone.
+
+No finite-volume amplification, magnetic-energy blow-up, finite-resistivity
+growth, or coupled MHD blow-up is asserted. The norm limit is along one path.
+
+### Validation
+
+The targeted new-module build passed. Full `lake build` passed with 11,259 jobs.
+All 13 new theorem declarations were checked with `#print axioms`; each uses
+only `propext`, `Classical.choice`, and `Quot.sound`. No new `sorry`, `sorryAx`,
+or axiom declaration was introduced. The four inherited comparator-challenge
+`sorry` warnings remain. The printed main theorem types were also inspected to
+verify that their induction hypotheses name the correct assembled velocities.
+
+## Next implementation plan: smallest periodic flow-map API
+
+This is an implementation plan, not a set of placeholder Lean declarations.
+Fix ONE actual periodic candidate and a reference time `a>T₀`. The intended
+initial field is spatially constant at that time:
+`B(a,x)=Bz0*e₂` for every `x`. A constant seed at time zero would be a different
+problem; its value on the distinguished path at a later reference time must
+not be assumed to remain axial.
+
+### Minimal interface
+
+Work on the existing `Space=real^3` periodic cover; no quotient or volume API is
+needed to construct stretching-form induction. On each `[a,b]`, `b<1`, expose:
+
+| Data or law | Purpose |
+| --- | --- |
+| Fixed-start forward map `X(t,y)` with `X(a,y)=y` and `d_t X=u(t,X)` | Supplies the actual particle paths |
+| Inverse `Y(t,x)` with `Y(t,X(t,y))=y` and `X(t,Y(t,x))=x` | Turns label-dependent transport into an Eulerian field |
+| One vector column `C(t,y)`, `C(a,y)=e₂`, `d_t C=Dₓu(t,X(t,y)) C` | Transports the constant axial seed; a full deformation-matrix API is not required |
+| Joint continuity through interval endpoints, joint differentiability of `Y` and `C` at interior points | Makes `B(t,x)=Bz0*C(t,Y(t,x))` differentiable and allows the material chain rule |
+| `X(t,y+n)=X(t,y)+n`, `Y(t,x+n)=Y(t,x)+n`, and `C(t,y+n)=C(t,y)` for lattice translations | Proves periodicity of the constructed magnetic field |
+| Restriction compatibility for `X,Y,C` on overlapping finite intervals with the same start time and velocity | Glues ONE field on `[a,1)` for the norm-divergence theorem |
+
+The column need not stay axial at arbitrary labels. Only the distinguished
+trajectory has the column-invariance property established in this milestone.
+No determinant, volume preservation, or full inverse-Jacobian interface is
+needed for this stretching-form construction. These do not discharge magnetic
+divergence preservation, which remains a separate theorem.
+
+### Existing APIs to reuse and the missing adapters
+
+1. **Periodic smooth field to bounded coefficient paths.** Build the existing
+   `SmoothTimeField (Icc 0 (b-a)) Space Space` for
+   `u(a+s,x)`, plus its time-derivative field. Periodicity reduces each spatial
+   jet bound and its uniform time continuity to a compact fundamental cell.
+   `assembled_velocities_smooth`, the actual velocity periodicity lemmas, and
+   `ResidualRegularity.space_fderiv_periods` supply the source facts.
+   `PeriodicUniqueness.exists_gradient_bound` gives the relevant compact
+   gradient bound; extend it periodically to obtain a global Lipschitz bound
+   on each finite interval. Bounds may depend on `b`; no bound through time
+   one is required. This packaging adapter is not yet implemented.
+2. **Construct the fixed-start flow and inverse.** Reuse
+   `EulerBoundedLipschitzFlow.exists_flow_and_inverse` from
+   `Euler/FiniteIntervalFlow.lean`, or the already smooth
+   `EulerSmoothBanachFlow.flowData` from `Euler/SmoothBanachFlow.lean`.
+   The latter derives its Lipschitz bound from `SmoothTimeField`.
+   Shift `s=t-a` only inside the adapter and export all statements in the
+   original physical time. The generic `Space` API is sufficient; the
+   repository's lifted four-dimensional cylinder-flow API is unnecessary.
+3. **Construct one differentiated column.**
+   `Euler/SmoothFlowJacobian.lean` provides `jacobianEvolution`,
+   `forward_hasFDerivAt_label`, `forward_fderiv`, and inverse differentiability.
+   Apply the actual Jacobian to `e₂` to define `C`. Its variational ODE comes
+   from that evolution; `Euler/LinearDuhamel.lean` supplies initial-value and
+   derivative/uniqueness laws. `Euler/SmoothFlowJoint.lean` supplies
+   `forward_joint_contDiffAt_two` and `backward_joint_contDiffAt_two` from the
+   time-derivative data, sufficient for joint `C¹` regularity of the column
+   and inverse. A small wrapper should export only the column laws needed
+   here. Gevrey smallness estimates from stronger flow modules are not needed.
+4. **Periodicity and Eulerian induction.** Use
+   `EulerBoundedLipschitzFlow.Data.flow_add_eq` from
+   `Euler/BoundedFlowPeriodicity.lean` for each coordinate lattice shift;
+   differentiation or variational uniqueness gives periodicity of `C`.
+   Define `B(t,x)=Bz0*C(t,Y(t,x))`. Prove the initial constant field and
+   periodicity. Differentiate `B(t,X(t,y))=Bz0*C(t,y)` and use surjectivity of
+   `X` to obtain `IdealInductionOn` pointwise. This avoids separately deriving
+   a PDE for the inverse map.
+5. **Compatibility and a single preterminal solution.** Use trajectory
+   uniqueness on overlaps and the existing linear-ODE uniqueness for columns,
+   with the same initial time and seed. `SmoothTimeField.compTime` and its
+   restriction API help align the finite-interval inputs. Glue along a
+   cofinal family `b→1` only AFTER proving overlap equality; regularity and
+   induction then follow locally from one finite slab. Apply the new
+   assembled norm theorem to this one field. No such gluing or magnetic
+   existence proof was added in the current milestone.
+
+## Previous milestone at 07a694d (historical)
+
+The following material preserves the prior handoff and correction audit.
+Earlier statements that assembled magnetic amplification is unproved are
+superseded by the conditional results above; magnetic existence is still open.
+
+
+## Prior natural-core milestone
 
 The natural-core amplification milestone is proved in
 `NavierStokes/MagneticCoreAmplification.lean`. Existing

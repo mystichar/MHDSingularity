@@ -76,12 +76,44 @@ parameters. It checks the actual correction germs, zeroth cutoff, spatial
 plateau, and time activation. See [MHD_PROGRESS.md](MHD_PROGRESS.md) for the
 correction-by-correction value and axial-derivative audit.
 
-The magnetic amplification theorems concern the natural core and are conditional
-on a supplied induction solution. They do not prove global magnetic PDE
-existence, divergence propagation, finite-volume amplification, or magnetic
-amplification for an assembled Navier–Stokes field. No full rotating deformation
-matrix is needed. Curl identities, resistivity, global flow derivatives, and
-MHD backreaction remain deferred.
+## Assembled magnetic amplification: conditional theorems
+
+`MagneticAssembledAmplification.lean` now combines that audit with the generic
+magnetic transport ODE. For the same selected schedule, it chooses one proved
+late threshold `T₀<1`, shared by the periodic and compact whole-space fields.
+For `T₀<a≤t≤b<1`, `periodic_pure_axial_transport` and
+`compact_pure_axial_transport` prove
+
+```text
+B(a,γ(a)) = Bz0 e₂  ⇒  B(t,γ(t)) = Bz0*((1-a)/(1-t))^K e₂.
+```
+
+Each theorem assumes ideal induction for its **assembled velocity**, path
+continuity on `[a,b]`, and joint differentiability at interior path points.
+Jacobian continuity and the two minimal transfer conditions are proved from
+the actual construction. The actual budget, geometric threshold, schedule,
+and natural-solution parameters are retained. Both fields use viscosity-one
+physical time with singular time `1`; neither needs a different time formula.
+
+`periodic_magnetic_norm_tendsto_atTop` and
+`compact_magnetic_norm_tendsto_atTop` prove `‖B(t,γ(t))‖ → ∞` as `t→1-` for
+`Bz0≠0`. They require **one fixed induction field on the entire interval
+`[a,1)`**, with path continuity and interior joint differentiability. They do
+not choose new magnetic fields on successive finite intervals. Periodicity of
+`B` is not needed for the pathwise theorem; it would be part of a future
+periodic existence construction.
+
+The generic `pure_axial_follows_scalar_ode` proves invariance of the axial line
+and its scalar ODE for any prescribed axial-column coefficient. No
+arbitrary-seed component formula is transferred to either assembled field:
+that would require an axial **row** identity, which is not proved here.
+
+Magnetic PDE existence and divergence preservation remain unproved. These
+results assert no finite-volume amplification, magnetic-energy blow-up,
+finite-resistivity growth, or coupled MHD blow-up. The next implementation plan
+in [MHD_PROGRESS.md](MHD_PROGRESS.md) describes a fixed-start periodic flow,
+its inverse, and one transported axial column, followed by compatible
+restriction/gluing to `[a,1)`. No flow-map placeholders were added.
 
 The Lake package name remains `NavierStokesAndEuler`, consistently in
 `lakefile.toml` and `lake-manifest.json`; MHDSingularity is the repository name.
