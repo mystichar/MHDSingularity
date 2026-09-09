@@ -1,6 +1,196 @@
-# Paper II: passive resistive induction — first formal milestone
+# Paper II: passive resistive induction and fixed-slab comparison
 
-## Fixed-slab finite-gain milestone: partial progress after 3a9b968
+## Completed periodic PDE-to-comparison checkpoint (after 4d513f8)
+
+This checkpoint proves comparison and uniqueness for supplied resistive
+solutions. It constructs the comparison's ideal witness and discharges its
+coefficient bounds. It does **not** construct a resistive solution. The
+physical domain is the unit-periodic cover of R3; time and fluid viscosity
+are the existing physical time and viscosity one. Magnetic diffusivity
+eta_m is a separate nonnegative real parameter.
+
+### Main statement and quantifiers
+
+In `NavierStokes.ResistiveMagnetic.Comparison`,
+`periodic_comparison_main` proves the following quantifier order:
+
+```
+exists scales, hsel : Selected scales, forcing, a, ha : a < 1,
+  0 < a and
+  CandidateProperties (velocity scales) (pressure scales) forcing and
+  ContDiff Real infinity forcing and the existing CandidateConsequences,
+  for every Bz0,
+    let I = (actualData budget threshold geometry scales hsel a ha).magnetic Bz0;
+    ClassicalSolution (velocity scales) I a 1 Bz0 and
+    separate spatial smoothness of I at every a <= t < 1 and
+    for every a < b < 1,
+      joint continuity of Delta I on [a,b] x R3 and
+      exists C >= 0, for every eta_m >= 0 and every supplied B,
+        [regularity, periodicity, resistive PDE and matching seed] imply
+        for every t in [a,b] and every x,
+          norm(B(t,x)-I(t,x)) <= eta_m*C.
+```
+
+The `ClassicalSolution` conclusion includes one periodic divergence-free
+ideal field, joint continuity on `[a,1)`, joint C1 regularity for a<t<1,
+initial constant axial data, and stretching-form ideal induction. The field
+I is the actual glued flow construction, not an arbitrary witness from
+`MagneticConclusions`. The theorem obtains the compatible selected schedule,
+pressure and forcing from the existing closed `MagneticPeriodicMain.periodic_main`.
+There is no new upstream compatibility or magnetic-existence axiom.
+
+The supplied resistive field needs exactly:
+
+- joint continuity on `[a,b] x R3` and unit coordinate periods at every slab time;
+- differentiability of `t -> B(t,x)` at every a<t<b and x;
+- `ContDiff Real 2 (fun x => B(t,x))` for every a<t<b;
+- `ResistiveInductionOn eta_m (Ioo a b) (velocity scales) B`;
+- `B(a,x)=Bz0 • coordinateVector 2` for every x.
+
+No derivatives or PDE before a, or at either endpoint, are required of B.
+No divergence or axial-invariance hypothesis on B is needed for comparison.
+The new result does not separately propagate its divergence.
+
+`actual_ideal_resistive` exports the more explicit choice of finite L,D>=0,
+with the actual bounds valid everywhere on the **closed** slab, before eta_m
+and B are quantified. Its estimate uses the existing exact real constant
+
+\[
+ C_b=D\sqrt{\frac{\exp((2L+1)(b-a))-1}{2L+1}},\qquad
+ \|B(t,x)-I(t,x)\|\le\eta_m C_b.
+\]
+
+`actual_comparison_constant` exports the same result using a single C.
+L,D,C may depend on the schedule, seed, a and b, but never on eta_m or the
+supplied resistive field. They are finite and nonnegative. D=0 and eta_m=0
+are included. These are fixed-slab estimates, with no uniformity as b tends
+to one and no computed numerical conductivity threshold.
+
+### Proof of the scalar comparison
+
+`ResistiveMagnetic.Slice.comparison` is a reusable theorem for a scalar q
+with the same endpoint continuity, unit periods, interior time derivative
+and C2 spatial slices. For a<b, eta_m>=0, c>0 and F0>=0, it proves
+
+\[
+ q_t+D_xq[u]-\eta_m\Delta q\le cq+F_0,\quad q(a,x)\le0
+ \quad\Longrightarrow\quad
+ q(t,x)\le F_0\frac{e^{c(t-a)}-1}{c}.
+\]
+
+There is no regularity, boundedness, periodicity or divergence assumption on
+u in this scalar theorem. The proof applies an integrating factor, subtracts
+an epsilon multiple of elapsed time, and takes a maximum on `[a,t]` times
+a compact unit cell, initially with t<b. Periodicity lifts a cell maximizer
+(including one on its boundary) to a global spatial maximizer. Its gradient
+is zero and its Laplacian nonpositive. A slope limit from past times makes
+the time derivative nonnegative. This contradicts the strict PDE inequality.
+The initial-time alternative is excluded using initial data; continuity
+extends the conclusion to b. No derivative of a time-dependent supremum is
+introduced.
+
+`ResistiveSquaredNormSlices.lean` uses slice derivatives, matching the
+vector PDE conventions. `Slice.scalarTime_eq` and `scalarPartial_eq` bridge
+the joint operators where the joint derivative exists; `scalarLaplacian_eq`
+states its additional joint-partial hypotheses explicitly. The comparison
+itself uses no such extra joint-derivative assumptions.
+`Slice.squared_equation` proves, for the forced difference W,
+
+\[
+ (\partial_t+u\cdot\nabla-\eta_m\Delta)\|W\|^2
+ =2\langle W,D_xu[W]\rangle
+ -2\eta_m\sum_i\|D_xW[e_i]\|^2+2\eta_m\langle W,f\rangle.
+\]
+
+`Comparison.difference_equation_of_slices` derives W=B-I and f=Delta I
+from the two PDEs. `Slice.squared_inequality` bounds the right side by
+`(2L+1)*norm(W)^2+eta_m^2*D^2` using the existing Young inequality.
+`Comparison.forced_estimate` applies the proved scalar comparison, then
+`norm_le_of_squared_barrier`. `Comparison.ideal_resistive` composes these
+steps. Neither final theorem assumes a barrier or an error bound. The
+stronger joint-smooth results in `ResistiveSquaredNorm.lean` are unchanged.
+
+### Actual ideal Laplacian continuity and bounds
+
+The new `ResistiveMagnetic.Jets.Slab.magnetic_jets` proves joint continuity
+of every finite spatial jet of the **finite-slab** Eulerian field on its
+closed time subtype. The proof is:
+
+1. `path_jets` evaluates spatial derivatives of a smooth function into the
+   uniform continuous-path Banach space. `Slab.F_jets` applies it to the
+   spatial derivative of the actual forward path family. This supplies all
+   required forward derivatives with their time continuity.
+2. `Slab.inverseF_jets` uses smoothness of operator inversion at the actual
+   invertible F and the parameterized composition chain rule. `Y_derivative`
+   identifies DY with inverse F evaluated at Y. `Y_jets` instantiates
+   `EulerGevreyComposition.continuous_iteratedFDeriv_of_fderiv_eq_comp`,
+   discharging its coefficient smoothness, coefficient jets and derivative
+   identity; no inverse-jet continuity is postulated.
+3. Composing F with Y and applying the fixed seed gives the actual magnetic
+   field's spatial jets. `laplacian_eq_jet` traces the second derivative.
+4. For the glued `MagneticPeriodicSolution.Data.magnetic`, a cofinal endpoint
+   strictly beyond b gives one compatible finite-slab representative on all
+   of `[a,b]`. Equality of entire spatial slices identifies their Laplacians,
+   including at a. `Data.magnetic_laplacian_continuousOn` exports that joint
+   continuity. `magnetic_laplacian_periodic` supplies its unit periods;
+   `magnetic_laplacian_bound` applies the existing compact-cell bound.
+
+All-order **spatial-jet continuity** on finite slabs is proved; joint
+C-infinity is not asserted. The previously proved joint C1 interior
+regularity and separate spatial smoothness of the glued field remain the
+exported classical regularity. Together with `actual_velocity_bounds`, the
+new Laplacian theorem discharges both coefficient hypotheses in the actual
+comparison package.
+
+### Uniqueness, remaining analytic obligations, and scope
+
+`Comparison.resistive_unique` applies the same squared-norm argument to the
+difference of two resistive fields with the same u, eta_m and initial data.
+Its forcing is zero, so the norm vanishes on the whole closed slab.
+`actual_resistive_unique` supplies the actual velocity-gradient bound.
+The common initial field may be arbitrary. Both theorems have the forward
+endpoint conventions and regularity stated above. They assert uniqueness
+in this class, without constructing a member of it.
+
+The comparison and uniqueness checkpoint has no remaining analytic gap.
+**Resistive existence is still outstanding:** a correct physical-periodic
+heat generator and smoothing estimates, derivative-loss source estimates,
+short-time construction, continuation, compatible spatial regularity and
+slab gluing, and forward-endpoint divergence preservation for the eventual
+constructed field still need to be instantiated. No solution B_eta on
+`[a,1)` is constructed here. The earlier conditional finite-gain theorem is
+unchanged; this run does not package a closed finite-gain result.
+
+Nothing in this checkpoint determines fixed-positive-diffusivity terminal
+behavior, a sharp gain law, a magnetic length scale, an eigen-curvature
+closure, a numerical threshold, energy blow-up, stability, attraction, or
+magnetic backreaction. The older conditional curvature-mode results remain
+separate.
+
+
+### Validation of the completed comparison checkpoint
+
+- Targeted builds passed for `ResistivePeriodicMaximum`,
+  `ResistiveSquaredNormSlices`, `ResistivePeriodicComparison`,
+  `ResistiveIdealJetBounds`, and `ResistiveActualComparison`.
+- Full `lake build` passed: **11,300 jobs**. The only warnings were the four
+  unchanged inherited `ComparatorChallenges` declarations using `sorry`.
+- `scripts/audit_resistive_periodic_comparison.lean` passed all **64** checks:
+  all 46 new theorems, four scalar operator definitions, and 14 explicit
+  construction/comparison dependencies. Every audit is transitive.
+- All **294** previous checks passed again: Paper I 151, the resistive
+  foundation 77, and the earlier comparison/Gaussian checkpoint 66.
+  Across all 358 checks, dependencies are limited to `propext`,
+  `Classical.choice`, and `Quot.sound` (or no axioms).
+- No `sorry`, `admit`, or new axiom declaration occurs in the five new Lean
+  files. Previously completed Lean files are unchanged. `git diff --check`
+  passed.
+
+## Historical checkpoint 4d513f8: partial progress after 3a9b968
+
+The following records the earlier checkpoint. Items 4 and 5 of its analytic
+obligations (ideal jets and scalar comparison) are discharged above. Its
+resistive-existence obligations and closed finite-gain gap remain.
 
 **The requested closed resistive-existence and finite-gain theorem is not
 complete.** No actual resistive solution has been constructed, either on a

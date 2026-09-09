@@ -5,32 +5,49 @@ from the inherited OpenAI Navier–Stokes formalization. The magnetic field is
 passive: no Lorentz-force backreaction or coupled MHD solution is asserted.
 The inherited results and their attribution are retained below.
 
-## Fixed-slab resistive amplification: construction still open
+## Periodic PDE-to-comparison: complete
 
-The extension after `3a9b968` adds a physical periodic bounded-continuous
-Banach space containing the constant seed and contractive Gaussian
-averaging operators. It proves actual selected-velocity coefficient bounds,
-the exact ideal/resistive difference equation, the squared-norm differential
-inequality, and exact finite-gain observation/threshold algebra.
+`ResistiveActualComparison.lean` closes the fixed-slab comparison with
+Paper I's **actual constructed periodic ideal field**. For each fixed
+`a < b < 1`, it proves finite, diffusivity-independent `L,D >= 0` bounding
+`||D_x u||` and `||Delta Bideal||`. Every supplied periodic resistive solution
+with the matching constant axial seed obeys, uniformly on `[a,b]` and space,
 
-**Actual resistive existence and the closed finite-gain theorem remain
-unproved.** The uniform O(eta_m) comparison is not yet established: its
-scalar barrier is still a premise of the square-root lemma. The finite-gain
-family theorem explicitly assumes the pointwise comparison estimate.
+```
+||Bres(t,x) - Bideal(t,x)|| <= eta_m * C_b,
+C_b = D * sqrt((exp((2*L+1)*(b-a))-1)/(2*L+1)).
+```
 
-The inherited Sobolev heat space is R3 x S1, not the physical three-torus.
-The new operators still need their generator and derivative-gain proofs,
-a completed periodic derivative scale, and a Volterra construction with
-continuation and regularity. The actual ideal Laplacian's joint continuity
-and an endpoint-compatible parabolic maximum principle are also outstanding.
-No resistive axial invariance, eigenprofile or length-scale power law is used.
-All prior Lean proofs remain unchanged. See the current checkpoint inventory
-in [the Paper II outline](Paper/ResistiveMagneticInduction.md).
+`Slice.comparison` proves the scalar barrier by a compact-cell maximum
+argument, using derivatives only for `a<t<b` and continuity at both endpoints.
+`Comparison.ideal_resistive` derives the difference PDE and squared-norm
+inequality before applying it. The fields need joint continuity on the
+closed slab, differentiable time slices and C2 spatial slices in its interior,
+periodicity, the two PDEs, and matching initial data. Zero diffusivity and
+zero Laplacian bound are included. No magnetic axial invariance is assumed.
 
-Targeted and full builds pass (11,295 jobs). The new audit checks 52
-theorems and 14 construction declarations; all 228 prior magnetic audits
-also pass with only standard axioms. Four inherited challenge warnings
-remain unchanged.
+`MagneticPeriodicSolution.Data.magnetic_laplacian_continuousOn` proves the
+needed joint continuity through the initial time from the actual forward
+path-space jets, inverse-Jacobian identity, and slab overlap compatibility.
+`magnetic_laplacian_bound` supplies D. This does not assert joint C-infinity.
+`Comparison.periodic_comparison_main` closes the NS schedule/data and chooses
+one ideal field for each seed, then a constant for each slab, **before**
+diffusivity and the supplied resistive field. `resistive_unique` and
+`actual_resistive_unique` prove forward uniqueness in this class.
+
+**Resistive existence remains open.** No solution family on `[a,1)` or closed
+finite-gain theorem is constructed here. The earlier Gaussian/Volterra
+construction obligations remain; the ideal Laplacian bound and scalar
+comparison principle are now discharged. No estimate is uniform through
+`t=1`, and fixed-positive-diffusivity terminal behavior is undetermined.
+All prior Lean proofs are unchanged. See [the Paper II proof outline](Paper/ResistiveMagneticInduction.md)
+and [the handoff](MHD_PROGRESS.md) for exact statements and validation.
+
+Targeted builds and the full `lake build` pass (**11,300 jobs**). The new
+64-check audit and all 294 previous magnetic checks pass with only
+`propext`, `Classical.choice`, and `Quot.sound` (or no axioms). The four
+inherited challenge warnings are unchanged. No admitted proof or axiom is
+added.
 
 ## Paper II: resistive identities and conditional cutoff
 

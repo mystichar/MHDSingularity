@@ -1,6 +1,112 @@
-# MHDSingularity handoff: Paper II resistive foundation
+# MHDSingularity handoff: periodic resistive comparison
 
-## Current finite-gain extension: checkpoints remain incomplete
+## Completed checkpoint after 4d513f8: periodic PDE-to-comparison
+
+The current local state was continued without resetting. Paper I and all
+previous Paper II Lean files are unchanged. Five new modules close the
+comparison and uniqueness package; resistive existence is deliberately not
+part of this checkpoint.
+
+1. `ResistivePeriodicMaximum.lean`, namespace `ResistiveMagnetic.Slice`:
+   `comparison` assumes a<b, eta_m>=0, c>0, F0>=0, joint continuity of a
+   unit-periodic scalar q on `[a,b] x R3`, differentiable time slices and C2
+   spatial slices for a<t<b, the slice PDE inequality
+   `q_t+Dq[u]-eta_m*Delta q <= c*q+F0`, and q(a,x)<=0. It proves
+   `q(t,x)<=F0*(exp(c*(t-a))-1)/c` for every a<=t<=b and x. No bound,
+   smoothness, periodicity, or incompressibility of u is needed here.
+   The proof subtracts a strict epsilon time barrier after an integrating
+   factor, obtains a maximum on a compact cell, lifts it to a spatial
+   maximum on the cover using actual coordinate periods, and uses the time
+   derivative from the left. The final endpoint follows by continuity.
+2. `ResistiveSquaredNormSlices.lean`: `Slice.squared_equation` and
+   `Slice.squared_inequality` use just a differentiable time slice and C2
+   spatial slice. They compute the full squared-norm Laplacian, including
+   the nonnegative derivative-square sum. The older joint-smooth theorems
+   are preserved. `scalarTime_eq`, `scalarPartial_eq`, and
+   `scalarLaplacian_eq` give explicit bridges to the joint scalar operators;
+   the last states the additional joint-partial differentiability it needs.
+   `Comparison.difference_equation_of_slices` subtracts the actual PDEs.
+3. `ResistivePeriodicComparison.lean`: `Comparison.ideal_resistive` assumes
+   both supplied fields have joint closed-slab continuity, unit periods,
+   differentiable interior time slices and C2 interior spatial slices,
+   their respective ideal/resistive PDEs, identical initial data, eta_m>=0,
+   L,D>=0, and the displayed interior bounds on Du and Delta Bideal. It proves
+   `||Bres-Bideal|| <= eta_m * Comparison.constant L D a b` everywhere on
+   the closed slab. It derives the scalar barrier; neither the barrier nor
+   the error bound is a hypothesis. `forced_estimate` is the reusable forced
+   vector theorem. `resistive_unique` proves equality of two supplied
+   resistive solutions with the same initial field and diffusivity using
+   zero forcing, with no ideal Laplacian bound required.
+4. `ResistiveIdealJetBounds.lean`: `Jets.Slab.F_jets`, `Y_jets`, and
+   `magnetic_jets` prove joint continuity of every finite spatial jet on a
+   finite-slab time subtype. The forward proof differentiates the existing
+   smooth map into continuous paths. The inverse coefficient is the inverse
+   of the actual F, proved smooth at its invertible values; all coefficient
+   jet and DY=A(Y) premises of `Euler/InverseMapJetContinuity.lean` are
+   discharged. For the SAME glued field `Data.magnetic Bz0`,
+   `MagneticPeriodicSolution.Data.magnetic_laplacian_continuousOn` proves
+   joint Laplacian continuity on every `[D.a,b] x R3`, b<1, including a.
+   `magnetic_laplacian_periodic` proves its periods, and
+   `magnetic_laplacian_bound` supplies a finite nonnegative bound independent
+   of eta_m. Whole spatial slices are identified with a larger finite-slab
+   representative by the existing overlap theorem.
+5. `ResistiveActualComparison.lean`: `Comparison.actual_ideal_resistive`
+   constructs `actualData budget threshold geometry scales hsel a ha` and
+   proves both L,D bounds before quantifying over eta_m and Bres.
+   `actual_comparison_constant` packages C>=0 before those quantifiers.
+   `actual_resistive_unique` also discharges the actual velocity bound.
+   `periodic_comparison_main` instantiates the closed Paper I NS witnesses,
+   pressure, forcing, physical time and viscosity-one velocity. It exports
+   the ideal classical solution and separate spatial smoothness, joint
+   Laplacian continuity, and the universally quantified comparison theorem.
+   Its only supplied magnetic solution is the resistive field with the
+   explicit regularity, periodicity, PDE and matching seed hypotheses.
+
+The constant is exactly
+`D*sqrt((exp((2*L+1)*(b-a))-1)/(2*L+1))`. It can depend on the selected
+velocity, reference time, seed and fixed b, but not on eta_m or Bres.
+Both eta_m=0 and D=0 are included. The proof compares the vector squared
+norm and never assumes that Bres remains axial. It needs no divergence
+hypothesis on Bres. It proves uniqueness in the stated class, not existence
+or a new divergence-propagation theorem.
+
+### Remaining obligations and stopping point
+
+There is no remaining barrier or ideal-Laplacian hypothesis in the actual
+comparison theorem. There is still no constructed positive-diffusivity
+solution, no family on `[a,1)`, and no closed finite-gain theorem. The next
+existence task must supply a physical-periodic heat generator/smoothing
+adapter, derivative-loss source estimates, Volterra construction and
+continuation, compatible regularity and slab restrictions, and forward
+endpoint divergence preservation for the constructed class. This run does
+not develop those objects. The older conditional curvature-mode and finite-
+gain transfer statements are unchanged. There is no terminal-uniform
+comparison, fixed-diffusivity blow-up/cutoff conclusion, length-scale law,
+energy blow-up, stability, attraction, or magnetic backreaction claim.
+
+
+### Validation of the completed comparison checkpoint
+
+- Targeted builds passed for `ResistivePeriodicMaximum`,
+  `ResistiveSquaredNormSlices`, `ResistivePeriodicComparison`,
+  `ResistiveIdealJetBounds`, and `ResistiveActualComparison`.
+- Full `lake build` passed: **11,300 jobs**. The only warnings were the four
+  unchanged inherited `ComparatorChallenges` declarations using `sorry`.
+- `scripts/audit_resistive_periodic_comparison.lean` passed all **64** checks:
+  all 46 new theorems, four scalar operator definitions, and 14 explicit
+  construction/comparison dependencies. Every audit is transitive.
+- All **294** previous checks passed again: Paper I 151, the resistive
+  foundation 77, and the earlier comparison/Gaussian checkpoint 66.
+  Across all 358 checks, dependencies are limited to `propext`,
+  `Classical.choice`, and `Quot.sound` (or no axioms).
+- No `sorry`, `admit`, or new axiom declaration occurs in the five new Lean
+  files. Previously completed Lean files are unchanged. `git diff --check`
+  passed.
+
+## Historical partial checkpoint 4d513f8: finite-gain extension
+
+The following inventory records that commit. Its comparison and ideal-jet
+gaps are closed by the checkpoint above; its resistive-existence gaps remain.
 
 Starting state was the clean local `3a9b968`, matching origin/main. No reset
 was performed. No AGENTS.md was present in the repository or its ancestor
